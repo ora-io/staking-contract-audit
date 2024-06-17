@@ -161,7 +161,7 @@ contract ERC7641Upgradeable is Initializable, ERC20PermitUpgradeable, ERC20Snaps
      * @param amount The amount of token to burn
      * @return redeemable The amount of revenue ETH redeemable
      */
-    function redeemableOnBurn(uint256 amount) external view returns (uint256) {
+    function redeemableOnBurn(uint256 amount) external view virtual returns (uint256) {
         (uint256 redeemableFromNewRevenue, uint256 redeemableFromPool) = _redeemableOnBurn(amount);
         return redeemableFromNewRevenue + redeemableFromPool;
     }
@@ -170,7 +170,7 @@ contract ERC7641Upgradeable is Initializable, ERC20PermitUpgradeable, ERC20Snaps
      * @dev A function to burn tokens and redeem the corresponding amount of revenue token
      * @param amount The amount of token to burn
      */
-    function burn(uint256 amount) external {
+    function burn(uint256 amount) external virtual {
         (uint256 redeemableFromNewRevenue, uint256 redeemableFromPool) = _redeemableOnBurn(amount);
         _redeemPool -= redeemableFromPool;
         _redeemed += redeemableFromNewRevenue;

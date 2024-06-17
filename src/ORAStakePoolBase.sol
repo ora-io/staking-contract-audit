@@ -81,7 +81,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     // ********* Write Internal Functions  ************
     function _deposit(address user, uint256 stakeAmount) internal virtual {
         _tokenTransferIn(user, stakeAmount);
-        _mintETHStaking(user, stakeAmount);
+        _mintStaking(user, stakeAmount);
     }
 
     function _tokenTransferIn(address, uint256 amount) internal virtual {
@@ -101,7 +101,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         payable(user).transfer(amount);
     }
 
-    function _mintETHStaking(address user, uint256 amount) internal {
+    function _mintStaking(address user, uint256 amount) internal {
         _mint(user, amount);
         totalValueLocked += amount;
     }

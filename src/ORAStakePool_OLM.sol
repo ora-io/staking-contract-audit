@@ -9,15 +9,6 @@ import {IAllowanceTransfer} from "./interfaces/IAllowanceTransfer.sol";
 import {IORAStakePoolPermit} from "./interfaces/IORAStakePoolPermit.sol";
 
 contract ORAStakePool_OLM is ORAStakePoolBase_ERC7641, IORAStakePoolPermit {
-    // ******** RevShare ************
-    event RevenueClaimed(uint256 indexed snapshotId);
-
-    function claimRevenue(uint256 _snapshotId) external tokenAddressIsValid(stakingTokenAddress) {
-        IERC7641(stakingTokenAddress).claim(_snapshotId);
-
-        emit RevenueClaimed(_snapshotId);
-    }
-
     // ******** Permit ************
     function stakeWithPermit(
         address user,

@@ -79,36 +79,28 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     }
 
     // ********* Write Internal Functions  ************
-    function _deposit(address user, uint256 stakeAmount) internal virtual {
-        _tokenTransferIn(user, stakeAmount);
-        _mintStaking(user, stakeAmount);
-    }
-
-    function _tokenTransferIn(address, uint256 amount) internal virtual {
-        require(msg.value == amount, "mismatched staking amount");
+    function _deposit(address user, uint256 amount) internal virtual {
+        _mint(user, amount);
+        totalValueLocked += amount;
+        _tokenTransferIn(user, amount);
     }
 
     function _withdraw(address user, uint256 amount) internal virtual {
         require(amount <= balanceOf(user), "invalid withdraw request");
 
         if (amount > 0) {
-            _burnETHStaking(user, amount);
+            _burn(user, amount);
+            totalValueLocked -= amount;
             _tokenTransferOut(user, amount);
         }
     }
 
+    function _tokenTransferIn(address, uint256 amount) internal virtual {
+        require(msg.value == amount, "mismatched staking amount");
+    }
+
     function _tokenTransferOut(address user, uint256 amount) internal virtual {
         payable(user).transfer(amount);
-    }
-
-    function _mintStaking(address user, uint256 amount) internal {
-        _mint(user, amount);
-        totalValueLocked += amount;
-    }
-
-    function _burnETHStaking(address user, uint256 amount) internal {
-        _burn(user, amount);
-        totalValueLocked -= amount;
     }
 
     function _updateAndCalculateClaimable(address user) internal returns (uint256) {
@@ -124,6 +116,10 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         }
 
         return claimableAmount;
+    }
+    
+    function _setRouter(address _router) internal {
+        stakingPoolRouter = _router;
     }
 
     // **************** Read Functions ******************
@@ -164,10 +160,6 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
 
     function setStakingTokenAddress(address _tokenAddress) external onlyOwner tokenAddressIsValid(_tokenAddress) {
         stakingTokenAddress = _tokenAddress;
-    }
-
-    function _setRouter(address _router) internal {
-        stakingPoolRouter = _router;
     }
 
     function pause() external onlyOwner {

@@ -13,6 +13,8 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     using Math for uint256;
 
     address public stakingPoolRouter;
+    address public permit2Address;
+    address public stakingTokenAddress;
 
     mapping(address => mapping(uint256 => WithdrawRequest)) withdrawQueue;
     mapping(address => uint256) nextRequestID;
@@ -22,6 +24,11 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
 
     modifier onlyRouter() {
         require(msg.sender == stakingPoolRouter, "Have to invoke from router");
+        _;
+    }
+
+    modifier tokenAddressIsValid(address tokenAddress) {
+        require(tokenAddress != address(0), "invalid token address");
         _;
     }
 
@@ -149,6 +156,14 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     // **************** Admin Functions *****************
     function setStakingPoolRouter(address router) external onlyOwner {
         _setRouter(router);
+    }
+
+    function setPermit2Address(address _permit2Address) external onlyOwner {
+        permit2Address = _permit2Address;
+    }
+
+    function setStakingTokenAddress(address _tokenAddress) external onlyOwner tokenAddressIsValid(_tokenAddress) {
+        stakingTokenAddress = _tokenAddress;
     }
 
     function _setRouter(address _router) internal {

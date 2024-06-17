@@ -37,7 +37,7 @@ contract DeployScript is Script {
         ORAStakePool_OLM(payable(address(olmpool_proxy))).initialize(
             router_proxy, initialOwner, "Staked OLM", 30 * 10 ** 18, 100, 64800
         );
-        ORAStakePool_OLM(payable(address(olmpool_proxy))).setOLMTokenAddress(payable(address(olm_proxy)));
+        ORAStakePool_OLM(payable(address(olmpool_proxy))).setStakingTokenAddress(payable(address(olm_proxy)));
 
         // set OLM related vault
         address[] memory vaultPools = new address[](1);

@@ -56,7 +56,7 @@ contract DeployScript is Script {
             new TransparentUpgradeableProxy(address(stpool_impl), proxyAdminAddress, new bytes(0));
 
         ORAStakePool_StETH(address(stpool_proxy)).initialize(address(router_proxy), initialOwner);
-        ORAStakePool_StETH(address(stpool_proxy)).setStETH(address(steth_proxy));
+        ORAStakePool_StETH(address(stpool_proxy)).setStakingTokenAddress(address(steth_proxy));
 
         if(initAsUnpause) {
             ORAStakePool_StETH(address(stpool_proxy)).unpause();
@@ -76,7 +76,7 @@ contract DeployScript is Script {
             new TransparentUpgradeableProxy(address(stakestonepool_impl), proxyAdminAddress, new bytes(0));
 
         ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).initialize(address(router_proxy), initialOwner);
-        ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).setStakeStoneETH(address(stakestoneeth_proxy));
+        ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).setStakingTokenAddress(address(stakestoneeth_proxy));
 
         if(initAsUnpause) {
             ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).unpause();

@@ -53,7 +53,7 @@ contract StakingTest is Test {
 
         stEthPool = ORAStakePool_StETH(address(stpool_proxy));
         stEthPool.initialize(address(router_proxy), initialOwner);
-        stEthPool.setStETH(address(steth_proxy));
+        stEthPool.setStakingTokenAddress(address(steth_proxy));
         stEthPool.unpause();
         // init stakestone token
         MyToken stakestoneeth_impl = new MyToken();
@@ -71,7 +71,7 @@ contract StakingTest is Test {
 
         stakeStoneEthPool = ORAStakePool_StakeStoneETH(address(stakestonepool_proxy));
         stakeStoneEthPool.initialize(address(router_proxy), initialOwner);
-        stakeStoneEthPool.setStakeStoneETH(address(stakestoneeth_proxy));
+        stakeStoneEthPool.setStakingTokenAddress(address(stakestoneeth_proxy));
         stakeStoneEthPool.unpause();
         // init eth pool
         ORAStakePool_ETH ethpool_impl = new ORAStakePool_ETH();

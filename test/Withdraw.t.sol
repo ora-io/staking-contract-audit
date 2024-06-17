@@ -64,7 +64,7 @@ contract WithdrawTest is Test {
 
         olmPool = ORAStakePool_OLM(payable(address(olmPool_proxy)));
         olmPool.initialize(address(router_proxy), initialOwner, "OLM Stake", 30 * 10 ** 18, 100, 64800);
-        olmPool.setOLMTokenAddress(address(olmToken));
+        olmPool.setStakingTokenAddress(address(olmToken));
         olmPool.unpause();
 
         address[] memory vaultPools2 = new address[](1);

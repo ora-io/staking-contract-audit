@@ -4,18 +4,9 @@ pragma solidity ^0.8.23;
 import {ORAStakePoolBase} from "./ORAStakePoolBase.sol";
 import {IStETH} from "./interfaces/IStETH.sol";
 import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import {IAllowanceTransfer} from "./interfaces/IAllowanceTransfer.sol";
 
 contract ORAStakePool_StETH is ORAStakePoolBase {
-    address public stETH;
-
-    modifier tokenAddressIsValid(address tokenAddress) {
-        require(tokenAddress != address(0), "invalid token address");
-        _;
-    }
-
-    function setStETH(address _tokenAddress) external onlyOwner tokenAddressIsValid(_tokenAddress) {
-        stETH = _tokenAddress;
-    }
 
     function stakeWithPermit(
         address user,
@@ -26,17 +17,21 @@ contract ORAStakePool_StETH is ORAStakePoolBase {
         bytes32 r,
         bytes32 s
     ) external {
-        IERC20Permit(stETH).permit(user, address(this), allowance, deadline, v, r, s);
+        IERC20Permit(stakingTokenAddress).permit(user, address(this), allowance, deadline, v, r, s);
         _deposit(user, stETHAmount);
     }
 
-    function _tokenTransferIn(address user, uint256 stakeAmount) internal override tokenAddressIsValid(stETH) {
+    function _tokenTransferIn(address user, uint256 stakeAmount) internal override tokenAddressIsValid(stakingTokenAddress) {
         require(msg.value == 0, "eth amount should be 0.");
-
-        IStETH(stETH).transferFrom(user, address(this), IStETH(stETH).getSharesByPooledEth(stakeAmount));
+        
+        if(permit2Address != address(0)) {
+            IAllowanceTransfer(permit2Address).transferFrom(user, address(this), uint160(stakeAmount), stakingTokenAddress);
+        } else {
+            IStETH(stakingTokenAddress).transferFrom(user, address(this), IStETH(stakingTokenAddress).getSharesByPooledEth(stakeAmount));
+        }
     }
 
-    function _tokenTransferOut(address user, uint256 withdrawAmount) internal override tokenAddressIsValid(stETH) {
-        IStETH(stETH).transfer(user, withdrawAmount);
+    function _tokenTransferOut(address user, uint256 withdrawAmount) internal override tokenAddressIsValid(stakingTokenAddress) {
+        IStETH(stakingTokenAddress).transfer(user, withdrawAmount);
     }
 }

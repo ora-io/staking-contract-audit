@@ -4,10 +4,11 @@ pragma solidity ^0.8.23;
 import {ORAStakePoolBase} from "./ORAStakePoolBase.sol";
 import {IStETH} from "./interfaces/IStETH.sol";
 import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import {IORAStakePoolPermit} from "./interfaces/IORAStakePoolPermit.sol";
 import {IAllowanceTransfer} from "./interfaces/IAllowanceTransfer.sol";
 
-contract ORAStakePool_StETH is ORAStakePoolBase {
-
+contract ORAStakePool_StETH is ORAStakePoolBase, IORAStakePoolPermit {
+    // ******** Permit ************
     function stakeWithPermit(
         address user,
         uint256 stETHAmount,
@@ -21,17 +22,30 @@ contract ORAStakePool_StETH is ORAStakePoolBase {
         _deposit(user, stETHAmount);
     }
 
-    function _tokenTransferIn(address user, uint256 stakeAmount) internal override tokenAddressIsValid(stakingTokenAddress) {
+    // ******** Token Transfer ************
+    function _tokenTransferIn(address user, uint256 stakeAmount)
+        internal
+        override
+        tokenAddressIsValid(stakingTokenAddress)
+    {
         require(msg.value == 0, "eth amount should be 0.");
-        
-        if(permit2Address != address(0)) {
-            IAllowanceTransfer(permit2Address).transferFrom(user, address(this), uint160(stakeAmount), stakingTokenAddress);
+
+        if (permit2Address != address(0)) {
+            IAllowanceTransfer(permit2Address).transferFrom(
+                user, address(this), uint160(stakeAmount), stakingTokenAddress
+            );
         } else {
-            IStETH(stakingTokenAddress).transferFrom(user, address(this), IStETH(stakingTokenAddress).getSharesByPooledEth(stakeAmount));
+            IStETH(stakingTokenAddress).transferFrom(
+                user, address(this), IStETH(stakingTokenAddress).getSharesByPooledEth(stakeAmount)
+            );
         }
     }
 
-    function _tokenTransferOut(address user, uint256 withdrawAmount) internal override tokenAddressIsValid(stakingTokenAddress) {
+    function _tokenTransferOut(address user, uint256 withdrawAmount)
+        internal
+        override
+        tokenAddressIsValid(stakingTokenAddress)
+    {
         IStETH(stakingTokenAddress).transfer(user, withdrawAmount);
     }
 }

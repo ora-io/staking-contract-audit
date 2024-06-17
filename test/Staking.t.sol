@@ -81,7 +81,7 @@ contract StakingTest is Test {
         ethPool = ORAStakePool_ETH(address(ethpool_proxy));
         ethPool.initialize(address(router_proxy), initialOwner);
         ethPool.unpause();
-        
+
         // set eth related vault
         address[] memory vaultPools = new address[](3);
         vaultPools[0] = address(stpool_proxy);

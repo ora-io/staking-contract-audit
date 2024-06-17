@@ -6,17 +6,19 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC7641} from "./interfaces/IERC7641.sol";
 import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {IAllowanceTransfer} from "./interfaces/IAllowanceTransfer.sol";
+import {IORAStakePoolPermit} from "./interfaces/IORAStakePoolPermit.sol";
 
-contract ORAStakePool_OLM is ORAStakePoolBase_ERC7641 {
-    // ******** Events ************
+contract ORAStakePool_OLM is ORAStakePoolBase_ERC7641, IORAStakePoolPermit {
+    // ******** RevShare ************
     event RevenueClaimed(uint256 indexed snapshotId);
 
-    function claimWithdraw(uint256 _snapshotId) external tokenAddressIsValid(stakingTokenAddress) {
+    function claimRevenue(uint256 _snapshotId) external tokenAddressIsValid(stakingTokenAddress) {
         IERC7641(stakingTokenAddress).claim(_snapshotId);
 
         emit RevenueClaimed(_snapshotId);
     }
 
+    // ******** Permit ************
     function stakeWithPermit(
         address user,
         uint256 olmAmount,
@@ -30,16 +32,27 @@ contract ORAStakePool_OLM is ORAStakePoolBase_ERC7641 {
         _deposit(user, olmAmount);
     }
 
-    function _tokenTransferIn(address user, uint256 stakeAmount) internal override tokenAddressIsValid(stakingTokenAddress) {
+    // ******** Token Transfer ************
+    function _tokenTransferIn(address user, uint256 stakeAmount)
+        internal
+        override
+        tokenAddressIsValid(stakingTokenAddress)
+    {
         require(msg.value == 0, "eth amount should be 0.");
-        if(permit2Address != address(0)) {
-            IAllowanceTransfer(permit2Address).transferFrom(user, address(this), uint160(stakeAmount), stakingTokenAddress);
+        if (permit2Address != address(0)) {
+            IAllowanceTransfer(permit2Address).transferFrom(
+                user, address(this), uint160(stakeAmount), stakingTokenAddress
+            );
         } else {
             IERC20(stakingTokenAddress).transferFrom(user, address(this), stakeAmount);
         }
     }
 
-    function _tokenTransferOut(address user, uint256 withdrawAmount) internal override tokenAddressIsValid(stakingTokenAddress) {
+    function _tokenTransferOut(address user, uint256 withdrawAmount)
+        internal
+        override
+        tokenAddressIsValid(stakingTokenAddress)
+    {
         IERC20(stakingTokenAddress).transfer(user, withdrawAmount);
     }
 }

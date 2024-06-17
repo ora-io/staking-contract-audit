@@ -4,7 +4,6 @@ pragma solidity ^0.8.23;
 import {IORAStakePool} from "./IORAStakePool.sol";
 
 interface IORAStakeRouter {
-
     // ******** Structures ************
     struct PoolVault {
         address[] pools;
@@ -14,11 +13,13 @@ interface IORAStakeRouter {
 
     // **************** Write Functions  ****************
     function stake(address pool, uint256 amount) external payable;
+    function stake(address pool, uint256 amount, uint256 allowance, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+        external;
     function requestWithdraw(address pool, uint256 amount) external returns (address, uint256 requestId);
     function claimWithdraw(address pool) external;
     function claimWithdraw(address[] calldata pools) external;
     function syncTVL(uint256 vaultID) external;
-    
+
     // **************** Read Functions ******************
     function withdrawStatus(address pool) external view returns (uint256, uint256);
     function getVaultTVL(uint256 vaultID) external view returns (uint256);

@@ -14,7 +14,6 @@ import {ORAStakePool_ETH} from "../src/ORAStakePool_ETH.sol";
 import {ORAStakePool_OLM} from "../src/ORAStakePool_OLM.sol";
 
 contract DeployScript is Script {
-
     address constant steth_proxy = 0x5FeC619342077cdB90652205535DBFCa6a1126fC;
     address constant stakestoneeth_proxy = 0x2FC35F3B5B75ecF265756882Eb21c68FDcaa828d;
     address constant proxyAdminAddress = 0x076CF237f609de0066AbC0974673Ab376992E4D2;
@@ -46,7 +45,7 @@ contract DeployScript is Script {
 
         ORAStakeRouter(address(router_proxy)).initialize(initialOwner);
 
-        if(initAsUnpause) {
+        if (initAsUnpause) {
             ORAStakeRouter(address(router_proxy)).unpause();
         }
 
@@ -58,7 +57,7 @@ contract DeployScript is Script {
         ORAStakePool_StETH(address(stpool_proxy)).initialize(address(router_proxy), initialOwner);
         ORAStakePool_StETH(address(stpool_proxy)).setStakingTokenAddress(address(steth_proxy));
 
-        if(initAsUnpause) {
+        if (initAsUnpause) {
             ORAStakePool_StETH(address(stpool_proxy)).unpause();
         }
 
@@ -78,7 +77,7 @@ contract DeployScript is Script {
         ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).initialize(address(router_proxy), initialOwner);
         ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).setStakingTokenAddress(address(stakestoneeth_proxy));
 
-        if(initAsUnpause) {
+        if (initAsUnpause) {
             ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).unpause();
         }
 
@@ -89,7 +88,7 @@ contract DeployScript is Script {
 
         ORAStakePool_ETH(address(ethpool_proxy)).initialize(address(router_proxy), initialOwner);
 
-        if(initAsUnpause) {
+        if (initAsUnpause) {
             ORAStakePool_ETH(address(ethpool_proxy)).unpause();
         }
 

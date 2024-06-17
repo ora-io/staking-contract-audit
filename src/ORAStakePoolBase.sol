@@ -18,7 +18,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
 
     mapping(address => mapping(uint256 => WithdrawRequest)) withdrawQueue;
     mapping(address => uint256) nextRequestID;
-    mapping (address => uint256) nextUnclaimedID;
+    mapping(address => uint256) nextUnclaimedID;
 
     uint256 public totalValueLocked;
 
@@ -59,7 +59,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     function stake(address user, uint256 stakeAmount) external payable virtual onlyRouter whenNotPaused {
         _deposit(user, stakeAmount);
     }
-    
+
     function requestWithdraw(address user, uint256 amount) external onlyRouter returns (uint256) {
         require(amount <= balanceOf(user), "invalid amount");
         withdrawQueue[user][nextRequestID[user]] = WithdrawRequest(amount, block.timestamp);
@@ -169,7 +169,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     function _setRouter(address _router) internal {
         stakingPoolRouter = _router;
     }
-    
+
     function pause() external onlyOwner {
         _pause();
     }

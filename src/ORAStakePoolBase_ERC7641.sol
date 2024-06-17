@@ -27,7 +27,7 @@ contract ORAStakePoolBase_ERC7641 is ORAStakePoolBase, ERC7641Upgradeable {
 
         _pause();
 
-         _setRouter(_router);
+        _setRouter(_router);
     }
 
     function _update(address from, address to, uint256 amount)

@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 interface IORAStakePool {
-
     // ******** Structures ************
     struct WithdrawRequest {
         uint256 amount;
@@ -21,7 +20,7 @@ interface IORAStakePool {
 
     // **************** Admin Functions *****************
     function setStakingPoolRouter(address router) external;
-    
+
     // ******** Errors ************
     error InvalidRequestId(uint256 requestId);
     error StakingNotInitiated();

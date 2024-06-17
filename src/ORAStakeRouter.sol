@@ -7,7 +7,7 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 import {IORAStakeRouter} from "./interfaces/IORAStakeRouter.sol";
 import {IORAStakePool} from "./interfaces/IORAStakePool.sol";
-
+import {IORAStakePoolPermit} from "./interfaces/IORAStakePoolPermit.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRouter {
@@ -54,13 +54,21 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
 
     // **************** Write Functions  ****************
     function stake(address pool, uint256 amount) external payable validPoolOnly(pool) whenNotPaused {
-        require(amount > 0, "invalid staking amount.");
-        PoolVault storage targetVault = vaults[pool2VaultId[pool]];
-        if (targetVault.currentTVL + amount > targetVault.maxTVL) {
-            revert ExceedingTVL();
-        }
+        _validateStake(pool, amount);
+
         IORAStakePool(pool).stake{value: msg.value}(msg.sender, amount);
-        targetVault.currentTVL += amount;
+
+        emit Stake(msg.sender, amount, pool2VaultId[pool], pool);
+    }
+
+    function stake(address pool, uint256 amount, uint256 allowance, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+        external
+        validPoolOnly(pool)
+        whenNotPaused
+    {
+        _validateStake(pool, amount);
+
+        IORAStakePoolPermit(pool).stakeWithPermit(msg.sender, amount, allowance, deadline, v, r, s);
 
         emit Stake(msg.sender, amount, pool2VaultId[pool], pool);
     }
@@ -107,7 +115,16 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
             totalTVL += IORAStakePool(pool).currentTVL();
         }
         targetVault.currentTVL = totalTVL;
-    }    
+    }
+
+    function _validateStake(address pool, uint256 amount) internal {
+        require(amount > 0, "invalid staking amount.");
+        PoolVault storage targetVault = vaults[pool2VaultId[pool]];
+        if (targetVault.currentTVL + amount > targetVault.maxTVL) {
+            revert ExceedingTVL();
+        }
+        targetVault.currentTVL += amount;
+    }
 
     // **************** Read Functions ******************
     function withdrawStatus(address pool) external view returns (uint256 claimableAmount, uint256 pendingAmount) {

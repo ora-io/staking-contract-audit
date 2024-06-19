@@ -5,7 +5,6 @@ import {ORAStakePoolBase} from "./ORAStakePoolBase.sol";
 import {IStETH} from "./interfaces/IStETH.sol";
 import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {IORAStakePoolPermit} from "./interfaces/IORAStakePoolPermit.sol";
-import {IAllowanceTransfer} from "./interfaces/IAllowanceTransfer.sol";
 
 contract ORAStakePool_StETH is ORAStakePoolBase, IORAStakePoolPermit {
     // ******** Permit ************
@@ -30,15 +29,9 @@ contract ORAStakePool_StETH is ORAStakePoolBase, IORAStakePoolPermit {
     {
         require(msg.value == 0, "eth amount should be 0.");
 
-        if (permit2Address != address(0)) {
-            IAllowanceTransfer(permit2Address).transferFrom(
-                user, address(this), uint160(stakeAmount), stakingTokenAddress
-            );
-        } else {
-            IStETH(stakingTokenAddress).transferFrom(
-                user, address(this), IStETH(stakingTokenAddress).getSharesByPooledEth(stakeAmount)
-            );
-        }
+        IStETH(stakingTokenAddress).transferFrom(
+            user, address(this), IStETH(stakingTokenAddress).getSharesByPooledEth(stakeAmount)
+        );
     }
 
     function _tokenTransferOut(address user, uint256 withdrawAmount)

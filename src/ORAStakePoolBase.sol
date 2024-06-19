@@ -117,7 +117,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
 
         return claimableAmount;
     }
-    
+
     function _setRouter(address _router) internal {
         stakingPoolRouter = _router;
     }

@@ -8,6 +8,8 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IORAStakeRouter} from "./interfaces/IORAStakeRouter.sol";
 import {IORAStakePool} from "./interfaces/IORAStakePool.sol";
 import {IORAStakePoolPermit} from "./interfaces/IORAStakePoolPermit.sol";
+import {IORAStakePoolPermit2} from "./interfaces/IORAStakePoolPermit2.sol";
+import {ISignatureTransfer} from "./interfaces/ISignatureTransfer.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRouter {
@@ -71,6 +73,19 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
         IORAStakePoolPermit(pool).stakeWithPermit(msg.sender, amount, allowance, deadline, v, r, s);
 
         emit Stake(msg.sender, amount, pool2VaultId[pool], pool);
+    }
+
+    function stake(
+        address pool,
+        ISignatureTransfer.PermitTransferFrom memory permit,
+        ISignatureTransfer.SignatureTransferDetails calldata transferDetails,
+        bytes calldata signature
+    ) external validPoolOnly(pool) whenNotPaused {
+        _validateStake(pool, transferDetails.requestedAmount);
+
+        IORAStakePoolPermit2(pool).stakeWithPermit2(permit, transferDetails, msg.sender, signature);
+
+        emit Stake(msg.sender, transferDetails.requestedAmount, pool2VaultId[pool], pool);
     }
 
     function requestWithdraw(address pool, uint256 amount)

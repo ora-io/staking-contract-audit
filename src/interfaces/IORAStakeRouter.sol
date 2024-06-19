@@ -2,6 +2,7 @@
 pragma solidity ^0.8.23;
 
 import {IORAStakePool} from "./IORAStakePool.sol";
+import {ISignatureTransfer} from "./ISignatureTransfer.sol";
 
 interface IORAStakeRouter {
     // ******** Structures ************
@@ -15,6 +16,12 @@ interface IORAStakeRouter {
     function stake(address pool, uint256 amount) external payable;
     function stake(address pool, uint256 amount, uint256 allowance, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
         external;
+    function stake(
+        address pool,
+        ISignatureTransfer.PermitTransferFrom memory permit,
+        ISignatureTransfer.SignatureTransferDetails calldata transferDetails,
+        bytes calldata signature
+    ) external;
     function requestWithdraw(address pool, uint256 amount) external returns (address, uint256 requestId);
     function claimWithdraw(address pool) external;
     function claimWithdraw(address[] calldata pools) external;

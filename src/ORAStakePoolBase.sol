@@ -18,7 +18,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
 
     mapping(address => mapping(uint256 => WithdrawRequest)) withdrawQueue;
     mapping(address => uint256) nextRequestID;
-    mapping(address => uint256) nextUnclaimedID;
+    mapping(address => uint256) public nextUnclaimedID; // visible for getting claim status
 
     uint256 public totalValueLocked;
 

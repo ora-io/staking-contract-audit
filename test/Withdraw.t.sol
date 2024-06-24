@@ -63,7 +63,7 @@ contract WithdrawTest is Test {
             new TransparentUpgradeableProxy(address(olmPool_impl), address(proxyAdmin), new bytes(0));
 
         olmPool = ORAStakePool_OLM(payable(address(olmPool_proxy)));
-        olmPool.initialize(address(router_proxy), initialOwner, "OLM Stake", 64800);
+        olmPool.initialize(address(router_proxy), initialOwner, "OLM Stake", "S-OLM", 64800);
         olmPool.setStakingTokenAddress(address(olmToken));
         olmPool.unpause();
 

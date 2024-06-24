@@ -17,8 +17,10 @@ contract ORAStakePool_OLM is ORAStakePoolBase_ERC7641, IORAStakePoolPermit {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external {
-        IERC20Permit(stakingTokenAddress).permit(user, address(this), allowance, deadline, v, r, s);
+    ) external onlyRouter {
+        if (IERC20(stakingTokenAddress).allowance(user, address(this)) < olmAmount) {
+            IERC20Permit(stakingTokenAddress).permit(user, address(this), allowance, deadline, v, r, s);
+        }
         _deposit(user, olmAmount);
     }
 

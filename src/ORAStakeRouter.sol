@@ -98,7 +98,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
 
         requestId = IORAStakePool(pool).requestWithdraw(msg.sender, amount);
 
-        emit RequestWithdraw(msg.sender, amount, requestId);
+        emit RequestWithdraw(msg.sender, amount, requestId, pool);
         return (pool, requestId);
     }
 
@@ -111,8 +111,9 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
     }
 
     function claimWithdraw(address[] calldata pools) external {
-        // This function would need to know which pool the requestIDs belong to, which is not provided in the interface.
-        for (uint256 i = 0; i < pools.length; i++) {
+        uint256 numOfPools = pools.length;
+        for (uint256 i = 0; i < numOfPools; i++) {
+            require(pool2VaultId[pools[i]] != 0, "Pool does not exist");
             PoolVault storage targetVault = vaults[pool2VaultId[pools[i]]];
 
             uint256 amount = IORAStakePool(pools[i]).claimWithdraw(msg.sender);
@@ -121,11 +122,11 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
         }
     }
 
-    function syncTVL(uint256 vaultId) external validVaultIdOnly(vaultId) {
-        require(vaultId != 0 && vaultId < vaults.length, "Vault ID does not exist.");
+    function syncTVL(uint256 vaultId) public validVaultIdOnly(vaultId) {
         uint256 totalTVL = 0;
         PoolVault storage targetVault = vaults[vaultId];
-        for (uint256 i = 0; i < vaults[vaultId].pools.length; i++) {
+        uint256 numOfPools = vaults[vaultId].pools.length;
+        for (uint256 i = 0; i < numOfPools; i++) {
             address pool = vaults[vaultId].pools[i];
             totalTVL += IORAStakePool(pool).currentTVL();
         }
@@ -165,7 +166,8 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
     function getUserStakeAmount(address user, uint256 vaultID) external view returns (uint256 stakeAmount) {
         require(vaultID < vaults.length, " invalid vault id");
         PoolVault storage currVault = vaults[vaultID];
-        for (uint256 i = 0; i < currVault.pools.length; i++) {
+        uint256 numOfPools = currVault.pools.length;
+        for (uint256 i = 0; i < numOfPools; i++) {
             stakeAmount += getUserStakeAmountInPool(user, currVault.pools[i]);
         }
     }
@@ -181,7 +183,8 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
     function addVault(address[] calldata pools, uint256 maxTVL) external onlyOwner {
         PoolVault memory newVault = PoolVault(pools, 0, maxTVL);
         vaults.push(newVault);
-        for (uint256 i = 0; i < pools.length; i++) {
+        uint256 numOfPools = pools.length;
+        for (uint256 i = 0; i < numOfPools; i++) {
             pool2VaultId[pools[i]] = vaults.length - 1;
         }
     }
@@ -197,23 +200,29 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
         // Add pool to new vault
         vaults[vaultId].pools.push(pool);
         pool2VaultId[pool] = vaultId;
+
+        syncTVL(vaultId);
     }
 
     function removePool(address pool) public onlyOwner validPoolOnly(pool) {
-        uint256 vaultID = pool2VaultId[pool];
+        uint256 vaultId = pool2VaultId[pool];
 
-        address[] storage vaultPools = vaults[vaultID].pools;
-        for (uint256 i = 0; i < vaultPools.length; i++) {
+        address[] storage vaultPools = vaults[vaultId].pools;
+        uint256 numOfPool = vaultPools.length;
+        for (uint256 i = 0; i < numOfPool; i++) {
             if (vaultPools[i] == pool) {
                 vaultPools[i] = vaultPools[vaultPools.length - 1];
                 vaultPools.pop();
                 break;
             }
         }
+
+        syncTVL(vaultId);
+
         delete pool2VaultId[pool];
     }
 
-    function parseRequest(bool _pauseWithdrawRq) external onlyOwner {
+    function pauseRequest(bool _pauseWithdrawRq) external onlyOwner {
         pauseWithdraw = _pauseWithdrawRq;
     }
 

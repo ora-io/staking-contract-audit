@@ -43,14 +43,14 @@ interface IORAStakeRouter {
     function updateVault(uint256 vaultID, uint256 maxTVL) external;
     function updatePool(address pool, uint256 vaultID) external;
     function removePool(address pool) external;
-    function parseRequest(bool pause) external;
+    function pauseRequest(bool pause) external;
     function updateWithdrawGracePeriod(uint256 _newPeriod) external;
     function withdrawGracePeriod() external view returns (uint256);
 
     // ******** Events ************
     event NewVault(uint256 indexed vaultID, uint256 maxTVL);
     event Stake(address indexed user, uint256 indexed amount, uint256 vaultId, address pool);
-    event RequestWithdraw(address indexed user, uint256 amount, uint256 requestID);
+    event RequestWithdraw(address indexed user, uint256 amount, uint256 requestID, address pool);
     event ClaimWithdraw(address indexed user, uint256 indexed amount, uint256 vaultId, address pool);
 
     // ******** Errors ************

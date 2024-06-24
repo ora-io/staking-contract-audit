@@ -13,7 +13,7 @@ contract ORAStakePool_StakeStoneETH is ORAStakePoolBase, IORAStakePoolPermit2 {
         ISignatureTransfer.SignatureTransferDetails calldata transferDetails,
         address user,
         bytes calldata signature
-    ) external tokenAddressIsValid(permit2Address) {
+    ) external onlyRouter tokenAddressIsValid(permit2Address) {
         require(permit.permitted.token == stakingTokenAddress, "token address mismatched.");
         _deposit(permit, transferDetails, user, signature);
     }

@@ -61,7 +61,13 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     }
 
     function requestWithdraw(address user, uint256 amount) external onlyRouter returns (uint256) {
-        require(amount <= balanceOf(user), "invalid amount");
+        uint256 totalRequestedAmount = 0;
+        for (uint256 i = nextUnclaimedID[user]; i < nextRequestID[user]; i++) {
+            totalRequestedAmount += withdrawQueue[user][i].amount;
+        }
+
+        require(totalRequestedAmount + amount <= balanceOf(user), "invalid amount");
+
         withdrawQueue[user][nextRequestID[user]] = WithdrawRequest(amount, block.timestamp);
         nextRequestID[user] = nextRequestID[user] + 1;
 
@@ -100,7 +106,8 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     }
 
     function _tokenTransferOut(address user, uint256 amount) internal virtual {
-        payable(user).transfer(amount);
+        (bool success,) = payable(user).call{value: amount}("");
+        require(success, "transfer failed");
     }
 
     function _updateAndCalculateClaimable(address user) internal returns (uint256) {

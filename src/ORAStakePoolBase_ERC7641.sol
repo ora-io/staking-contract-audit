@@ -13,15 +13,19 @@ import {IERC7641} from "./interfaces/IERC7641.sol";
 import {IORAStakePool} from "./interfaces/IORAStakePool.sol";
 import {IORAStakeRouter} from "./interfaces/IORAStakeRouter.sol";
 
-contract ORAStakePoolBase_ERC7641 is ORAStakePoolBase, ERC7641Upgradeable {
+contract ORAStakePoolBase_ERC7641 is ERC7641Upgradeable, ORAStakePoolBase {
     event RevenueClaimed(uint256 indexed snapshotId);
 
-    function initialize(address _router, address _initialOwner, string memory name, uint256 _snapshotInterval)
-        external
-        initializer
-    {
+    function initialize(
+        address _router,
+        address _initialOwner,
+        string memory name,
+        string memory symbol,
+        uint256 _snapshotInterval
+    ) external initializer {
         __Ownable_init(_initialOwner);
         __Pausable_init();
+        __ERC20_init(name, symbol);
         __ERC7641_init(name, 0, 100, _snapshotInterval);
 
         _pause();

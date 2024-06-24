@@ -35,7 +35,9 @@ contract DeployScript is Script {
         TransparentUpgradeableProxy olmpool_proxy =
             new TransparentUpgradeableProxy(address(olmpool_impl), proxyAdmin, new bytes(0));
 
-        ORAStakePool_OLM(payable(address(olmpool_proxy))).initialize(router_proxy, initialOwner, "Staked OLM", 64800);
+        ORAStakePool_OLM(payable(address(olmpool_proxy))).initialize(
+            router_proxy, initialOwner, "Staked OLM", "S-OLM", 64800
+        );
         ORAStakePool_OLM(payable(address(olmpool_proxy))).setStakingTokenAddress(payable(address(olm_proxy)));
 
         // set OLM related vault

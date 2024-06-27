@@ -31,5 +31,9 @@ contract MyToken is Initializable, ERC20Upgradeable, OwnableUpgradeable, ERC20Pe
         return _pooledEthAmount;
     }
 
+    function getPooledEthByShares(uint256 _pooledEthShares) external pure returns (uint256) {
+        return _pooledEthShares;
+    }
+
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }

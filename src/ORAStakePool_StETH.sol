@@ -28,7 +28,6 @@ contract ORAStakePool_StETH is ORAStakePoolBase, IORAStakePoolPermit {
         uint256 shares = IStETH(stakingTokenAddress).getSharesByPooledEth(amount);
         // convert amount to to shares
         _mint(user, shares);
-        totalValueLocked += shares;
         _tokenTransferIn(user, amount);
     }
 
@@ -38,7 +37,6 @@ contract ORAStakePool_StETH is ORAStakePoolBase, IORAStakePoolPermit {
         if (shares > 0) {
             uint256 amount = IStETH(stakingTokenAddress).getPooledEthByShares(shares);
             _burn(user, shares);
-            totalValueLocked -= shares;
             _tokenTransferOut(user, amount);
         }
     }
@@ -60,5 +58,10 @@ contract ORAStakePool_StETH is ORAStakePoolBase, IORAStakePoolPermit {
         tokenAddressIsValid(stakingTokenAddress)
     {
         IStETH(stakingTokenAddress).transfer(user, withdrawAmount);
+    }
+
+    // ******** TVL calculator ************
+    function currentTVL() external view override returns (uint256) {
+        return IStETH(stakingTokenAddress).getPooledEthByShares(balanceOf(address(this)));
     }
 }

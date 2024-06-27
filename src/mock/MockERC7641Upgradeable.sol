@@ -13,7 +13,7 @@ contract My7641Token is Initializable, ERC7641Upgradeable, OwnableUpgradeable, U
     }
 
     function initialize(address initialOwner) public initializer {
-        __ERC7641_init("Mock OLM", 100 * 10 ** 18, 100, 64800);
+        __ERC7641_init("Mock OLM", 0, 100, 100);
         __Ownable_init(initialOwner);
         __UUPSUpgradeable_init();
 

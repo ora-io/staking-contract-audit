@@ -25,7 +25,6 @@ contract ORAStakePool_StakeStoneETH is ORAStakePoolBase, IORAStakePoolPermit2 {
         bytes calldata signature
     ) internal {
         _mint(user, transferDetails.requestedAmount);
-        totalValueLocked += transferDetails.requestedAmount;
         _tokenTransferIn(permit, transferDetails, user, signature);
     }
 
@@ -58,4 +57,10 @@ contract ORAStakePool_StakeStoneETH is ORAStakePoolBase, IORAStakePoolPermit2 {
     {
         IERC20(stakingTokenAddress).transfer(user, withdrawAmount);
     }
+
+        // ******** TVL calculator ************
+    function currentTVL() external view override returns (uint256) {
+        return balanceOf(address(this));
+    }
+
 }

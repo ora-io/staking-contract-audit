@@ -30,6 +30,11 @@ contract UpgradeOLMPoolsScript is Script {
         newImplementationAddress = address(newOLMPoolImpl);
         proxyAdmin.upgrade(olmPool_proxy, newImplementationAddress);
 
+        logAddress("OLMPOOL_IMPLEMENTATION_ADDR", address(newOLMPoolImpl));
         vm.stopBroadcast();
+    }
+
+    function logAddress(string memory name, address addr) internal view {
+        console.log(string(abi.encodePacked(name, "=", vm.toString(address(addr)))));
     }
 }

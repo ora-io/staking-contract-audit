@@ -8,7 +8,6 @@ interface IORAStakeRouter {
     // ******** Structures ************
     struct PoolVault {
         address[] pools;
-        uint256 currentTVL;
         uint256 maxTVL;
     }
 
@@ -25,11 +24,11 @@ interface IORAStakeRouter {
     function requestWithdraw(address pool, uint256 amount) external returns (address, uint256 requestId);
     function claimWithdraw(address pool) external;
     function claimWithdraw(address[] calldata pools) external;
-    function syncTVL(uint256 vaultID) external;
+    function getVaultCurrentTVL(uint256 vaultID) external returns(uint256);
 
     // **************** Read Functions ******************
     function withdrawStatus(address pool) external view returns (uint256, uint256);
-    function getVaultTVL(uint256 vaultID) external view returns (uint256);
+    function getVaultMaxTVL(uint256 vaultID) external view returns (uint256);
     function getPoolTVL(address pool) external view returns (uint256);
     function getWithdrawQueue(address pool, address user)
         external

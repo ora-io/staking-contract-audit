@@ -41,4 +41,8 @@ contract ORAStakePool_OLM is ORAStakePoolBase_ERC7641, IORAStakePoolPermit {
     {
         IERC20(stakingTokenAddress).transfer(user, withdrawAmount);
     }
+
+    function currentTVL() external view override returns (uint256) {
+        return balanceOf(address(this));
+    }
 }

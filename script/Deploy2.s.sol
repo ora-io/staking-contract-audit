@@ -12,7 +12,7 @@ import {My7641Token} from "../src/mock/MockERC7641Upgradeable.sol";
 
 contract DeployScript is Script {
     address constant proxyAdmin = 0x076CF237f609de0066AbC0974673Ab376992E4D2;
-    address constant router_proxy = 0x256a883AAcE1ff96B1C9CB5a3284285b6cacE11B;
+    address constant router_proxy = 0x27005E147C856839eC135ad9FD329828Eb5b53b6;
     address constant olm_proxy = 0x0e919a5F1A28b1Bb8a92c4A1A8972F2e447DFAa2;
 
     function setUp() public {}

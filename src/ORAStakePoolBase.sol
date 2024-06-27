@@ -20,8 +20,6 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     mapping(address => uint256) nextRequestID;
     mapping(address => uint256) public nextUnclaimedID; // visible for getting claim status
 
-    uint256 public totalValueLocked;
-
     modifier onlyRouter() {
         require(msg.sender == stakingPoolRouter, "Have to invoke from router");
         _;
@@ -87,7 +85,6 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     // ********* Write Internal Functions  ************
     function _deposit(address user, uint256 amount) internal virtual {
         _mint(user, amount);
-        totalValueLocked += amount;
         _tokenTransferIn(user, amount);
     }
 
@@ -96,7 +93,6 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
 
         if (amount > 0) {
             _burn(user, amount);
-            totalValueLocked -= amount;
             _tokenTransferOut(user, amount);
         }
     }
@@ -141,8 +137,8 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         }
     }
 
-    function currentTVL() external view returns (uint256) {
-        return totalValueLocked;
+    function currentTVL() external view virtual returns (uint256) {
+        return address(this).balance;
     }
 
     function getWithdrawQueue(address user) external view returns (WithdrawRequest[] memory queue) {

@@ -44,6 +44,15 @@ contract UpgradeETHPoolsScript is Script {
         newImplementationAddress = address(newStakeStoneETHPoolImpl);
         proxyAdmin.upgrade(stakestoneETHPool_proxy, newImplementationAddress);
         //optional: fix existing data
+
+        logAddress("STETHPOOL_IMPLEMENTATION_ADDR", address(newStETHPoolImpl));
+        logAddress("ETHPOOL_IMPLEMENTATION_ADDR", address(newETHPoolImpl));
+        logAddress("STONEETHPOOL_IMPLEMENTATION_ADDR", address(newStakeStoneETHPoolImpl));
+
         vm.stopBroadcast();
+    }
+
+    function logAddress(string memory name, address addr) internal view {
+        console.log(string(abi.encodePacked(name, "=", vm.toString(address(addr)))));
     }
 }

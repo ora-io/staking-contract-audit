@@ -99,7 +99,7 @@ contract DeployScript is Script {
         vaultPools[2] = address(ethpool_proxy);
         ORAStakeRouter(address(router_proxy)).addVault(vaultPools, 100 * 10 ** 18);
 
-        ORAStakeRouter(address(router_proxy)).updateWithdrawGracePeriod(5 days);
+        ORAStakeRouter(address(router_proxy)).updateWithdrawGracePeriod(100);
 
         // init olm pool
 

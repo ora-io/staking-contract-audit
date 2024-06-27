@@ -60,7 +60,7 @@ contract ORAStakePool_StakeStoneETH is ORAStakePoolBase, IORAStakePoolPermit2 {
 
         // ******** TVL calculator ************
     function currentTVL() external view override returns (uint256) {
-        return balanceOf(address(this));
+        return IERC20(stakingTokenAddress).balanceOf(address(this));
     }
 
 }

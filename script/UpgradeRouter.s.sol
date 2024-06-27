@@ -14,11 +14,11 @@ contract UpgradeORAStakeRouterScript is Script {
     address public proxyAdminAddress = 0x076CF237f609de0066AbC0974673Ab376992E4D2; // Replace with actual Proxy Admin address
     address public routerProxyAddress = 0x256a883AAcE1ff96B1C9CB5a3284285b6cacE11B; // Replace with actual Router Proxy address
 
-    address public ethPoolAddress = 0xB311424b2DA6841EC532535b7fd2308c388Cdd1e;
-    address public stETHPoolAddress = 0x8E1942cd8FBc91BCD44997E13De6E4fC06db2869;
-    address public stakestonePoolAddress = 0x42069636D4a72AF50e35d2537423A359925903c8;
+    address public ethPoolAddress = 0xb2bA4FdBd74A10C01E06291E04c7Bbc8da05d4e3;
+    address public stETHPoolAddress = 0xc632CcE23917C80191B2cE80DeF00D91C627932a;
+    address public stakestonePoolAddress = 0x4e34818517Fb95eF8351E73665Ba90525A7815b2;
 
-    address public olmPoolAddress = 0x07f836115552C85fc46144c8E93ede1ADA2E8111;
+    address public olmPoolAddress = 0x565DCD06caF01F5320e0a76303FABeb8962D6eb7;
     address public newImplementationAddress;
 
     function run() public {

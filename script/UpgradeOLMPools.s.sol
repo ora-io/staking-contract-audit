@@ -16,7 +16,7 @@ import {ORAStakePool_OLM} from "../src/ORAStakePool_OLM.sol";
 contract UpgradeOLMPoolsScript is Script {
     address public proxyAdminAddress = 0x076CF237f609de0066AbC0974673Ab376992E4D2; // Replace with actual Proxy Admin address
 
-    address public olmPoolAddress = 0x07f836115552C85fc46144c8E93ede1ADA2E8111;
+    address public olmPoolAddress = 0x565DCD06caF01F5320e0a76303FABeb8962D6eb7;
 
     address public newImplementationAddress;
 

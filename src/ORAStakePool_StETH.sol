@@ -62,6 +62,6 @@ contract ORAStakePool_StETH is ORAStakePoolBase, IORAStakePoolPermit {
 
     // ******** TVL calculator ************
     function currentTVL() external view override returns (uint256) {
-        return IStETH(stakingTokenAddress).getPooledEthByShares(balanceOf(address(this)));
+        return IERC20(stakingTokenAddress).balanceOf(address(this));
     }
 }

@@ -43,6 +43,6 @@ contract ORAStakePool_OLM is ORAStakePoolBase_ERC7641, IORAStakePoolPermit {
     }
 
     function currentTVL() external view override returns (uint256) {
-        return balanceOf(address(this));
+        return IERC20(stakingTokenAddress).balanceOf(address(this));
     }
 }

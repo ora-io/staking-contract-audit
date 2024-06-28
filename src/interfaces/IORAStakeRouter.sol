@@ -24,7 +24,7 @@ interface IORAStakeRouter {
     function requestWithdraw(address pool, uint256 amount) external returns (address, uint256 requestId);
     function claimWithdraw(address pool) external;
     function claimWithdraw(address[] calldata pools) external;
-    function getVaultCurrentTVL(uint256 vaultID) external returns(uint256);
+    function getVaultCurrentTVL(uint256 vaultID) external returns (uint256);
 
     // **************** Read Functions ******************
     function withdrawStatus(address pool) external view returns (uint256, uint256);

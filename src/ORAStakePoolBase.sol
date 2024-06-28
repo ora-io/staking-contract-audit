@@ -6,6 +6,7 @@ import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/Pau
 import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IORAStakePool} from "./interfaces/IORAStakePool.sol";
 import {IORAStakeRouter} from "./interfaces/IORAStakeRouter.sol";
 
@@ -45,14 +46,6 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         _setRouter(_router);
     }
 
-    function transfer(address, uint256) public pure virtual override returns (bool) {
-        revert();
-    }
-
-    function transferFrom(address, address, uint256) public pure virtual override returns (bool) {
-        revert();
-    }
-
     // **************** Write Functions  ****************
     function stake(address user, uint256 stakeAmount) external payable virtual onlyRouter whenNotPaused {
         _deposit(user, stakeAmount);
@@ -84,26 +77,40 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
 
     // ********* Write Internal Functions  ************
     function _deposit(address user, uint256 amount) internal virtual {
-        _mint(user, amount);
+        uint256 shares = amount;
+        if (totalAssets() != 0) {
+            shares = _convertToShares(amount, totalAssets(), Math.Rounding.Floor);
+        }
+
+        _mint(user, shares);
         _tokenTransferIn(user, amount);
     }
 
-    function _withdraw(address user, uint256 amount) internal virtual {
-        require(amount <= balanceOf(user), "invalid withdraw request");
+    function _withdraw(address user, uint256 shares) internal virtual {
+        require(shares <= balanceOf(user), "invalid withdraw request");
 
-        if (amount > 0) {
-            _burn(user, amount);
-            _tokenTransferOut(user, amount);
+        if (shares > 0) {
+            _tokenTransferOut(user, _convertToAssets(shares, totalAssets(), Math.Rounding.Floor));
+            _burn(user, shares);
         }
     }
 
-    function _tokenTransferIn(address, uint256 amount) internal virtual {
-        require(msg.value == amount, "mismatched staking amount");
+    function _tokenTransferIn(address user, uint256 stakeAmount)
+        internal
+        virtual
+        tokenAddressIsValid(stakingTokenAddress)
+    {
+        require(msg.value == 0, "eth amount should be 0.");
+
+        IERC20(stakingTokenAddress).transferFrom(user, address(this), stakeAmount);
     }
 
-    function _tokenTransferOut(address user, uint256 amount) internal virtual {
-        (bool success,) = payable(user).call{value: amount}("");
-        require(success, "transfer failed");
+    function _tokenTransferOut(address user, uint256 withdrawAmount)
+        internal
+        virtual
+        tokenAddressIsValid(stakingTokenAddress)
+    {
+        IERC20(stakingTokenAddress).transfer(user, withdrawAmount);
     }
 
     function _updateAndCalculateClaimable(address user) internal returns (uint256) {
@@ -137,10 +144,6 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         }
     }
 
-    function currentTVL() external view virtual returns (uint256) {
-        return address(this).balance;
-    }
-
     function getWithdrawQueue(address user) external view returns (WithdrawRequest[] memory queue) {
         uint256 requestCount = nextRequestID[user];
         queue = new WithdrawRequest[](requestCount);
@@ -150,6 +153,46 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         }
 
         return queue;
+    }
+
+    function balanceOfAsset(address user) external view virtual returns (uint256) {
+        return _convertToAssets(balanceOf(user), totalAssets(), Math.Rounding.Floor);
+    }
+
+    function convertToShares(uint256 assets, uint256 totalAssetsBalance) external view returns (uint256) {
+        return _convertToShares(assets, totalAssetsBalance, Math.Rounding.Floor);
+    }
+
+    function convertToAssets(uint256 shares, uint256 totalAssetsBalance) external view returns (uint256) {
+        return _convertToAssets(shares, totalAssetsBalance, Math.Rounding.Floor);
+    }
+
+    function totalAssets() public view virtual returns (uint256) {
+        return stakingTokenAddress == address(0)
+            ? address(this).balance
+            : IERC20(stakingTokenAddress).balanceOf(address(this));
+    }
+
+    /**
+     * @dev Internal conversion function (from assets to shares) with support for rounding direction.
+     */
+    function _convertToShares(uint256 assets, uint256 totalAssetsBalance, Math.Rounding rounding)
+        internal
+        view
+        returns (uint256)
+    {
+        return assets.mulDiv(totalSupply() + 10, totalAssetsBalance + 1, rounding);
+    }
+
+    /**
+     * @dev Internal conversion function (from shares to assets) with support for rounding direction.
+     */
+    function _convertToAssets(uint256 shares, uint256 totalAssetsBalance, Math.Rounding rounding)
+        internal
+        view
+        returns (uint256)
+    {
+        return shares.mulDiv(totalAssetsBalance + 1, totalSupply() + 10, rounding);
     }
 
     // **************** Admin Functions *****************

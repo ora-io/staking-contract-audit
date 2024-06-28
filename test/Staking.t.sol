@@ -6,7 +6,6 @@ import {ProxyAdmin} from "@openzeppelin-contract/contracts/proxy/transparent/Pro
 import {TransparentUpgradeableProxy} from
     "@openzeppelin-contract/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {MyToken} from "../src/mock/MockERC20Upgradeable.sol";
-import {My7641Token} from "../src/mock/MockERC7641Upgradeable.sol";
 import {ORAStakeRouter} from "../src/ORAStakeRouter.sol";
 import {ORAStakePool_StETH} from "../src/ORAStakePool_STETH.sol";
 import {ORAStakePool_StakeStoneETH} from "../src/ORAStakePool_StakeStoneETH.sol";
@@ -19,7 +18,7 @@ contract StakingTest is Test {
     ORAStakeRouter router;
     MyToken stETH;
     MyToken stakeStoneETH;
-    My7641Token olmToken;
+    MyToken olmToken;
     ORAStakePool_ETH ethPool;
     ORAStakePool_StETH stEthPool;
     ORAStakePool_StakeStoneETH stakeStoneEthPool;

@@ -118,12 +118,12 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
         }
     }
 
-    function getVaultCurrentTVL(uint256 vaultId) public view returns(uint256) {
+    function getVaultCurrentTVL(uint256 vaultId) public view returns (uint256) {
         uint256 totalTVL = 0;
         uint256 numOfPools = vaults[vaultId].pools.length;
         for (uint256 i = 0; i < numOfPools; i++) {
             address pool = vaults[vaultId].pools[i];
-            totalTVL += IORAStakePool(pool).currentTVL();
+            totalTVL += IORAStakePool(pool).totalAssets();
         }
         return totalTVL;
     }
@@ -146,7 +146,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
     }
 
     function getPoolTVL(address pool) external view returns (uint256) {
-        return IORAStakePool(pool).currentTVL();
+        return IORAStakePool(pool).totalAssets();
     }
 
     function getWithdrawQueue(address pool, address user)

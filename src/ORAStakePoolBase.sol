@@ -110,14 +110,14 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         }
     }
 
-    function _tokenTransferIn(address user, uint256 stakeAmount) internal virtual {
+    function _tokenTransferIn(address user, uint256 amount) internal virtual {
         require(msg.value == 0, "eth amount should be 0.");
 
-        IERC20(stakingTokenAddress).transferFrom(user, address(this), stakeAmount);
+        IERC20(stakingTokenAddress).transferFrom(user, address(this), amount);
     }
 
-    function _tokenTransferOut(address user, uint256 withdrawAmount) internal virtual {
-        IERC20(stakingTokenAddress).transfer(user, withdrawAmount);
+    function _tokenTransferOut(address user, uint256 amount) internal virtual {
+        IERC20(stakingTokenAddress).transfer(user, amount);
     }
 
     function _updateAndCalculateClaimable(address user) internal returns (uint256) {

@@ -29,7 +29,7 @@ contract ORAStakePool_StakeStoneETH is ORAStakePoolBase, IORAStakePoolPermit2 {
     ) internal {
         uint256 shares = transferDetails.requestedAmount;
         if (totalAssets() != 0) {
-            shares = _convertToShares(transferDetails.requestedAmount, Math.Rounding.Floor);
+            shares = _convertToShares(transferDetails.requestedAmount);
         }
 
         _mint(user, shares);

@@ -70,9 +70,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
             totalRequestedAmount += withdrawQueue[user][i].amount;
         }
 
-        require(
-            totalRequestedAmount + amount <= _convertToAssets(balanceOf(user), Math.Rounding.Floor), "invalid amount"
-        );
+        require(totalRequestedAmount + amount <= _convertToAssets(balanceOf(user)), "invalid amount");
 
         withdrawQueue[user][nextRequestID[user]] = WithdrawRequest(amount, block.timestamp);
         nextRequestID[user] = nextRequestID[user] + 1;
@@ -95,7 +93,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         uint256 shares = amount;
         uint256 existingAsset = totalAssets();
         if (existingAsset != 0 && totalSupply() != 0) {
-            shares = _convertToShares(amount, Math.Rounding.Floor);
+            shares = _convertToShares(amount);
         }
 
         _mint(user, shares);
@@ -103,7 +101,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     }
 
     function _withdraw(address user, uint256 amount) internal virtual {
-        uint256 shares = _convertToShares(amount, Math.Rounding.Floor);
+        uint256 shares = _convertToShares(amount);
         require(shares <= balanceOf(user), "invalid withdraw request");
 
         if (amount > 0) {
@@ -177,15 +175,11 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     }
 
     function balanceOfAsset(address user) external view virtual returns (uint256) {
-        return _convertToAssets(balanceOf(user), Math.Rounding.Floor);
+        return _convertToAssets(balanceOf(user));
     }
 
     function convertToShares(uint256 assets) external view returns (uint256) {
-        return _convertToShares(assets, Math.Rounding.Floor);
-    }
-
-    function _convertToAssets(uint256 shares) external view returns (uint256) {
-        return _convertToAssets(shares, Math.Rounding.Floor);
+        return _convertToShares(assets);
     }
 
     function totalAssets() public view virtual returns (uint256) {
@@ -197,15 +191,15 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     /**
      * @dev Internal conversion function (from assets to shares) with support for rounding direction.
      */
-    function _convertToShares(uint256 assets, Math.Rounding rounding) internal view returns (uint256) {
-        return assets.mulDiv(totalSupply(), totalAssets(), rounding);
+    function _convertToShares(uint256 assets) internal view returns (uint256) {
+        return assets.mulDiv(totalSupply(), totalAssets(), Math.Rounding.Floor);
     }
 
     /**
      * @dev Internal conversion function (from shares to assets) with support for rounding direction.
      */
-    function _convertToAssets(uint256 shares, Math.Rounding rounding) internal view returns (uint256) {
-        return shares.mulDiv(totalAssets(), totalSupply(), rounding);
+    function _convertToAssets(uint256 shares) internal view returns (uint256) {
+        return shares.mulDiv(totalAssets(), totalSupply(), Math.Rounding.Floor);
     }
 
     // **************** Admin Functions *****************

@@ -16,7 +16,7 @@ contract ORAStakePool_StakeStoneETH is ORAStakePoolBase, IORAStakePoolPermit2 {
         ISignatureTransfer.SignatureTransferDetails calldata transferDetails,
         address user,
         bytes calldata signature
-    ) external onlyRouter tokenAddressIsValid(permit2Address) {
+    ) external onlyRouter {
         require(permit.permitted.token == stakingTokenAddress, "token address mismatched.");
         _deposit(permit, transferDetails, user, signature);
     }
@@ -29,7 +29,7 @@ contract ORAStakePool_StakeStoneETH is ORAStakePoolBase, IORAStakePoolPermit2 {
     ) internal {
         uint256 shares = transferDetails.requestedAmount;
         if (totalAssets() != 0) {
-            shares = _convertToShares(transferDetails.requestedAmount, totalAssets(), Math.Rounding.Floor);
+            shares = _convertToShares(transferDetails.requestedAmount, Math.Rounding.Floor);
         }
 
         _mint(user, shares);

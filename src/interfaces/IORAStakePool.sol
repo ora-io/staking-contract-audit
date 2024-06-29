@@ -16,6 +16,7 @@ interface IORAStakePool {
     // **************** Read Functions ******************
     function withdrawStatus(address user) external view returns (uint256 claimableAmount, uint256 pendingAmount);
     function totalAssets() external view returns (uint256);
+    function balanceOfAsset(address user) external view returns (uint256);
     function getWithdrawQueue(address user) external view returns (WithdrawRequest[] memory queue);
 
     // **************** Admin Functions *****************

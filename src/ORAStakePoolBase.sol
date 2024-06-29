@@ -70,7 +70,9 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
             totalRequestedAmount += withdrawQueue[user][i].amount;
         }
 
-        require(totalRequestedAmount + amount <= balanceOf(user), "invalid amount");
+        require(
+            totalRequestedAmount + amount <= _convertToAssets(balanceOf(user), Math.Rounding.Floor), "invalid amount"
+        );
 
         withdrawQueue[user][nextRequestID[user]] = WithdrawRequest(amount, block.timestamp);
         nextRequestID[user] = nextRequestID[user] + 1;
@@ -93,7 +95,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         uint256 shares = amount;
         uint256 existingAsset = totalAssets();
         if (existingAsset != 0 && totalSupply() != 0) {
-            shares = _convertToShares(amount, existingAsset, Math.Rounding.Floor);
+            shares = _convertToShares(amount, Math.Rounding.Floor);
         }
 
         _mint(user, shares);
@@ -101,30 +103,22 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     }
 
     function _withdraw(address user, uint256 amount) internal virtual {
-        uint256 shares = _convertToShares(amount, totalAssets(), Math.Rounding.Floor);
+        uint256 shares = _convertToShares(amount, Math.Rounding.Floor);
         require(shares <= balanceOf(user), "invalid withdraw request");
 
         if (amount > 0) {
-            _tokenTransferOut(user, amount);
             _burn(user, shares);
+            _tokenTransferOut(user, amount);
         }
     }
 
-    function _tokenTransferIn(address user, uint256 stakeAmount)
-        internal
-        virtual
-        tokenAddressIsValid(stakingTokenAddress)
-    {
+    function _tokenTransferIn(address user, uint256 stakeAmount) internal virtual {
         require(msg.value == 0, "eth amount should be 0.");
 
         IERC20(stakingTokenAddress).transferFrom(user, address(this), stakeAmount);
     }
 
-    function _tokenTransferOut(address user, uint256 withdrawAmount)
-        internal
-        virtual
-        tokenAddressIsValid(stakingTokenAddress)
-    {
+    function _tokenTransferOut(address user, uint256 withdrawAmount) internal virtual {
         IERC20(stakingTokenAddress).transfer(user, withdrawAmount);
     }
 
@@ -183,15 +177,15 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     }
 
     function balanceOfAsset(address user) external view virtual returns (uint256) {
-        return _convertToAssets(balanceOf(user), totalAssets(), Math.Rounding.Floor);
+        return _convertToAssets(balanceOf(user), Math.Rounding.Floor);
     }
 
-    function convertToShares(uint256 assets, uint256 totalAssetsBalance) external view returns (uint256) {
-        return _convertToShares(assets, totalAssetsBalance, Math.Rounding.Floor);
+    function convertToShares(uint256 assets) external view returns (uint256) {
+        return _convertToShares(assets, Math.Rounding.Floor);
     }
 
-    function convertToAssets(uint256 shares, uint256 totalAssetsBalance) external view returns (uint256) {
-        return _convertToAssets(shares, totalAssetsBalance, Math.Rounding.Floor);
+    function _convertToAssets(uint256 shares) external view returns (uint256) {
+        return _convertToAssets(shares, Math.Rounding.Floor);
     }
 
     function totalAssets() public view virtual returns (uint256) {
@@ -203,23 +197,15 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     /**
      * @dev Internal conversion function (from assets to shares) with support for rounding direction.
      */
-    function _convertToShares(uint256 assets, uint256 totalAssetsBalance, Math.Rounding rounding)
-        internal
-        view
-        returns (uint256)
-    {
-        return assets.mulDiv(totalSupply(), totalAssetsBalance, rounding);
+    function _convertToShares(uint256 assets, Math.Rounding rounding) internal view returns (uint256) {
+        return assets.mulDiv(totalSupply(), totalAssets(), rounding);
     }
 
     /**
      * @dev Internal conversion function (from shares to assets) with support for rounding direction.
      */
-    function _convertToAssets(uint256 shares, uint256 totalAssetsBalance, Math.Rounding rounding)
-        internal
-        view
-        returns (uint256)
-    {
-        return shares.mulDiv(totalAssetsBalance, totalSupply(), rounding);
+    function _convertToAssets(uint256 shares, Math.Rounding rounding) internal view returns (uint256) {
+        return shares.mulDiv(totalAssets(), totalSupply(), rounding);
     }
 
     // **************** Admin Functions *****************

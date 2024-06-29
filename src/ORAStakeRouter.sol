@@ -19,7 +19,9 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
     uint256 private constant TOTAL_VALUE_LOCKED_LIMIT = 100 * MULTIPLIER;
     uint256 private constant SECONDS_ONE_DAY = 86400;
     uint256 public withdrawGracePeriod;
-    bool public pauseWithdraw = false;
+
+    bool public pauseWithdraw;
+
     PoolVault[] public vaults; // id starts from 1
     mapping(address => uint256) public pool2VaultId;
 
@@ -33,7 +35,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
         _;
     }
 
-    modifier isWithdrawAllowed() {
+    modifier whenNotPausedWithdraw() {
         require(pauseWithdraw == false, "withdraw is paused.");
         _;
     }
@@ -52,6 +54,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
         vaults.push(initVault);
 
         withdrawGracePeriod = SECONDS_ONE_DAY; // 1 day by default
+        _setPauseWithdraw(true);
     }
 
     // **************** Write Functions  ****************
@@ -91,7 +94,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
     function requestWithdraw(address pool, uint256 amount)
         external
         validPoolOnly(pool)
-        isWithdrawAllowed
+        whenNotPausedWithdraw
         returns (address, uint256 requestId)
     {
         require(amount > 0, "invalid withdraw amount.");
@@ -212,8 +215,8 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
         delete pool2VaultId[pool];
     }
 
-    function pauseRequest(bool _pauseWithdrawRq) external onlyOwner {
-        pauseWithdraw = _pauseWithdrawRq;
+    function setPauseWithdraw(bool pauseWithdrawRq) external onlyOwner {
+        _setPauseWithdraw(pauseWithdrawRq);
     }
 
     function updateWithdrawGracePeriod(uint256 _newPeriod) external onlyOwner {
@@ -226,5 +229,9 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
 
     function unpause() external onlyOwner {
         _unpause();
+    }
+
+    function _setPauseWithdraw(bool pauseWithdrawRq) internal {
+        pauseWithdraw = pauseWithdrawRq;
     }
 }

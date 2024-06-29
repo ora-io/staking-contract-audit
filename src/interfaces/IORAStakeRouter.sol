@@ -42,7 +42,7 @@ interface IORAStakeRouter {
     function updateVault(uint256 vaultID, uint256 maxTVL) external;
     function updatePool(address pool, uint256 vaultID) external;
     function removePool(address pool) external;
-    function pauseRequest(bool pause) external;
+    function setPauseWithdraw(bool pauseWithdrawRq) external;
     function updateWithdrawGracePeriod(uint256 _newPeriod) external;
     function withdrawGracePeriod() external view returns (uint256);
 

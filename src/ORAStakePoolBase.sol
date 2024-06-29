@@ -17,12 +17,19 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     address public permit2Address;
     address public stakingTokenAddress;
 
+    bool public pauseWithdraw;
+
     mapping(address => mapping(uint256 => WithdrawRequest)) withdrawQueue;
     mapping(address => uint256) nextRequestID;
     mapping(address => uint256) public nextUnclaimedID; // visible for getting claim status
 
     modifier onlyRouter() {
         require(msg.sender == stakingPoolRouter, "Have to invoke from router");
+        _;
+    }
+
+    modifier whenNotPausedWithdraw() {
+        require(pauseWithdraw == false, "withdraw is paused.");
         _;
     }
 
@@ -44,6 +51,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         _pause();
 
         _setRouter(_router);
+        _setPauseWithdraw(true);
     }
 
     // **************** Write Functions  ****************
@@ -51,7 +59,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         _deposit(user, stakeAmount);
     }
 
-    function requestWithdraw(address user, uint256 amount) external onlyRouter returns (uint256) {
+    function requestWithdraw(address user, uint256 amount) external onlyRouter whenNotPausedWithdraw returns (uint256) {
         uint256 totalRequestedAmount = 0;
         for (uint256 i = nextUnclaimedID[user]; i < nextRequestID[user]; i++) {
             totalRequestedAmount += withdrawQueue[user][i].amount;
@@ -132,6 +140,10 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         stakingPoolRouter = _router;
     }
 
+    function _setPauseWithdraw(bool pauseWithdrawRq) internal {
+        pauseWithdraw = pauseWithdrawRq;
+    }
+
     // **************** Read Functions ******************
     function withdrawStatus(address user) external view returns (uint256 claimableAmount, uint256 pendingAmount) {
         for (uint256 i = nextUnclaimedID[user]; i < nextRequestID[user]; i++) {
@@ -198,6 +210,10 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     // **************** Admin Functions *****************
     function setStakingPoolRouter(address router) external onlyOwner {
         _setRouter(router);
+    }
+
+    function setPauseWithdraw(bool pauseWithdrawRq) external onlyOwner {
+        _setPauseWithdraw(pauseWithdrawRq);
     }
 
     function setPermit2Address(address _permit2Address) external onlyOwner {

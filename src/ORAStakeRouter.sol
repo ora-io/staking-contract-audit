@@ -19,7 +19,9 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
     uint256 private constant TOTAL_VALUE_LOCKED_LIMIT = 100 * MULTIPLIER;
     uint256 private constant SECONDS_ONE_DAY = 86400;
     uint256 public withdrawGracePeriod;
-    bool public pauseWithdraw = false;
+
+    bool public pauseWithdraw;
+
     PoolVault[] public vaults; // id starts from 1
     mapping(address => uint256) public pool2VaultId;
 
@@ -33,7 +35,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
         _;
     }
 
-    modifier isWithdrawAllowed() {
+    modifier whenNotPausedWithdraw() {
         require(pauseWithdraw == false, "withdraw is paused.");
         _;
     }
@@ -52,6 +54,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
         vaults.push(initVault);
 
         withdrawGracePeriod = SECONDS_ONE_DAY; // 1 day by default
+        _setPauseWithdraw(true);
     }
 
     // **************** Write Functions  ****************
@@ -91,7 +94,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
     function requestWithdraw(address pool, uint256 amount)
         external
         validPoolOnly(pool)
-        isWithdrawAllowed
+        whenNotPausedWithdraw
         returns (address, uint256 requestId)
     {
         require(amount > 0, "invalid withdraw amount.");
@@ -118,12 +121,12 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
         }
     }
 
-    function getVaultCurrentTVL(uint256 vaultId) public view returns(uint256) {
+    function getVaultCurrentTVL(uint256 vaultId) public view returns (uint256) {
         uint256 totalTVL = 0;
         uint256 numOfPools = vaults[vaultId].pools.length;
         for (uint256 i = 0; i < numOfPools; i++) {
             address pool = vaults[vaultId].pools[i];
-            totalTVL += IORAStakePool(pool).currentTVL();
+            totalTVL += IORAStakePool(pool).totalAssets();
         }
         return totalTVL;
     }
@@ -146,7 +149,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
     }
 
     function getPoolTVL(address pool) external view returns (uint256) {
-        return IORAStakePool(pool).currentTVL();
+        return IORAStakePool(pool).totalAssets();
     }
 
     function getWithdrawQueue(address pool, address user)
@@ -167,7 +170,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
     }
 
     function getUserStakeAmountInPool(address user, address pool) public view returns (uint256 stakeAmount) {
-        stakeAmount = IERC20(pool).balanceOf(user);
+        stakeAmount = IORAStakePool(pool).balanceOfAsset(user);
         (uint256 claimable, uint256 pending) = IORAStakePool(pool).withdrawStatus(user);
         stakeAmount -= claimable;
         stakeAmount -= pending;
@@ -212,8 +215,8 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
         delete pool2VaultId[pool];
     }
 
-    function pauseRequest(bool _pauseWithdrawRq) external onlyOwner {
-        pauseWithdraw = _pauseWithdrawRq;
+    function setPauseWithdraw(bool pauseWithdrawRq) external onlyOwner {
+        _setPauseWithdraw(pauseWithdrawRq);
     }
 
     function updateWithdrawGracePeriod(uint256 _newPeriod) external onlyOwner {
@@ -226,5 +229,9 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
 
     function unpause() external onlyOwner {
         _unpause();
+    }
+
+    function _setPauseWithdraw(bool pauseWithdrawRq) internal {
+        pauseWithdraw = pauseWithdrawRq;
     }
 }

@@ -5,15 +5,18 @@ import {ORAStakePoolBase} from "./ORAStakePoolBase.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IORAStakePoolPermit2} from "./interfaces/IORAStakePoolPermit2.sol";
 import {ISignatureTransfer} from "./interfaces/ISignatureTransfer.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract ORAStakePool_StakeStoneETH is ORAStakePoolBase, IORAStakePoolPermit2 {
+    using Math for uint256;
+
     // **************** Permit2 Token Transfer  ****************
     function stakeWithPermit2(
         ISignatureTransfer.PermitTransferFrom memory permit,
         ISignatureTransfer.SignatureTransferDetails calldata transferDetails,
         address user,
         bytes calldata signature
-    ) external onlyRouter tokenAddressIsValid(permit2Address) {
+    ) external onlyRouter {
         require(permit.permitted.token == stakingTokenAddress, "token address mismatched.");
         _deposit(permit, transferDetails, user, signature);
     }
@@ -24,7 +27,12 @@ contract ORAStakePool_StakeStoneETH is ORAStakePoolBase, IORAStakePoolPermit2 {
         address user,
         bytes calldata signature
     ) internal {
-        _mint(user, transferDetails.requestedAmount);
+        uint256 shares = transferDetails.requestedAmount;
+        if (totalAssets() != 0) {
+            shares = _convertToShares(transferDetails.requestedAmount);
+        }
+
+        _mint(user, shares);
         _tokenTransferIn(permit, transferDetails, user, signature);
     }
 
@@ -39,28 +47,4 @@ contract ORAStakePool_StakeStoneETH is ORAStakePoolBase, IORAStakePoolPermit2 {
 
         ISignatureTransfer(permit2Address).permitTransferFrom(permit, transferDetails, user, signature);
     }
-
-    function _tokenTransferIn(address user, uint256 stakeAmount)
-        internal
-        override
-        tokenAddressIsValid(stakingTokenAddress)
-    {
-        require(msg.value == 0, "eth amount should be 0.");
-
-        IERC20(stakingTokenAddress).transferFrom(user, address(this), stakeAmount);
-    }
-
-    function _tokenTransferOut(address user, uint256 withdrawAmount)
-        internal
-        override
-        tokenAddressIsValid(stakingTokenAddress)
-    {
-        IERC20(stakingTokenAddress).transfer(user, withdrawAmount);
-    }
-
-        // ******** TVL calculator ************
-    function currentTVL() external view override returns (uint256) {
-        return IERC20(stakingTokenAddress).balanceOf(address(this));
-    }
-
 }

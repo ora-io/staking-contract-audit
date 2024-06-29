@@ -7,7 +7,6 @@ import {ProxyAdmin} from "@openzeppelin-contract/contracts/proxy/transparent/Pro
 import {TransparentUpgradeableProxy} from
     "@openzeppelin-contract/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {MyToken} from "../src/mock/MockERC20Upgradeable.sol";
-import {My7641Token} from "../src/mock/MockERC7641Upgradeable.sol";
 import {ORAStakeRouter} from "../src/ORAStakeRouter.sol";
 import {ORAStakePool_StETH} from "../src/ORAStakePool_STETH.sol";
 import {ORAStakePool_StakeStoneETH} from "../src/ORAStakePool_StakeStoneETH.sol";
@@ -19,7 +18,7 @@ import {IORAStakeRouter} from "../src/interfaces/IORAStakeRouter.sol";
 
 contract WithdrawTest is Test {
     ORAStakeRouter router;
-    My7641Token olmToken;
+    MyToken olmToken;
     ORAStakePool_ETH ethPool;
     ORAStakePool_OLM olmPool;
 
@@ -50,20 +49,20 @@ contract WithdrawTest is Test {
         vaultPools[0] = address(ethpool_proxy);
         ORAStakeRouter(address(router_proxy)).addVault(vaultPools, 100 * 10 ** 18);
         ORAStakeRouter(address(router_proxy)).unpause();
-        My7641Token olmToken_impl = new My7641Token();
+        MyToken olmToken_impl = new MyToken();
 
         TransparentUpgradeableProxy olmToken_proxy =
             new TransparentUpgradeableProxy(address(olmToken_impl), address(proxyAdmin), new bytes(0));
 
-        olmToken = My7641Token(payable(address(olmToken_proxy)));
-        olmToken.initialize(initialOwner);
+        olmToken = MyToken(payable(address(olmToken_proxy)));
+        olmToken.initialize("OLM TOKEN", "OLM", initialOwner);
 
         ORAStakePool_OLM olmPool_impl = new ORAStakePool_OLM();
         TransparentUpgradeableProxy olmPool_proxy =
             new TransparentUpgradeableProxy(address(olmPool_impl), address(proxyAdmin), new bytes(0));
 
         olmPool = ORAStakePool_OLM(payable(address(olmPool_proxy)));
-        olmPool.initialize(address(router_proxy), initialOwner, "OLM Stake", "S-OLM", 64800);
+        olmPool.initialize(address(router_proxy), initialOwner);
         olmPool.setStakingTokenAddress(address(olmToken));
         olmPool.unpause();
 

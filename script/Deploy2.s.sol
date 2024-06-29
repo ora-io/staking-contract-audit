@@ -8,7 +8,6 @@ import {TransparentUpgradeableProxy} from
     "@openzeppelin-contract/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {ORAStakeRouter} from "../src/ORAStakeRouter.sol";
 import {ORAStakePool_OLM} from "../src/ORAStakePool_OLM.sol";
-import {My7641Token} from "../src/mock/MockERC7641Upgradeable.sol";
 
 contract DeployScript is Script {
     address constant proxyAdmin = 0x076CF237f609de0066AbC0974673Ab376992E4D2;
@@ -35,9 +34,7 @@ contract DeployScript is Script {
         TransparentUpgradeableProxy olmpool_proxy =
             new TransparentUpgradeableProxy(address(olmpool_impl), proxyAdmin, new bytes(0));
 
-        ORAStakePool_OLM(payable(address(olmpool_proxy))).initialize(
-            router_proxy, initialOwner, "Staked OLM", "S-OLM", 64800
-        );
+        ORAStakePool_OLM(payable(address(olmpool_proxy))).initialize(router_proxy, initialOwner);
         ORAStakePool_OLM(payable(address(olmpool_proxy))).setStakingTokenAddress(payable(address(olm_proxy)));
 
         // set OLM related vault

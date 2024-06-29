@@ -59,7 +59,12 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         _deposit(user, stakeAmount);
     }
 
-    function requestWithdraw(address user, uint256 amount) external onlyRouter whenNotPausedWithdraw returns (uint256) {
+    function requestWithdraw(address user, uint256 amount)
+        external
+        onlyRouter
+        whenNotPausedWithdraw
+        returns (uint256)
+    {
         uint256 totalRequestedAmount = 0;
         for (uint256 i = nextUnclaimedID[user]; i < nextRequestID[user]; i++) {
             totalRequestedAmount += withdrawQueue[user][i].amount;
@@ -86,19 +91,21 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     // ********* Write Internal Functions  ************
     function _deposit(address user, uint256 amount) internal virtual {
         uint256 shares = amount;
-        if (totalAssets() != 0) {
-            shares = _convertToShares(amount, totalAssets(), Math.Rounding.Floor);
+        uint256 existingAsset = totalAssets();
+        if (existingAsset != 0 && totalSupply() != 0) {
+            shares = _convertToShares(amount, existingAsset, Math.Rounding.Floor);
         }
 
         _mint(user, shares);
         _tokenTransferIn(user, amount);
     }
 
-    function _withdraw(address user, uint256 shares) internal virtual {
+    function _withdraw(address user, uint256 amount) internal virtual {
+        uint256 shares = _convertToShares(amount, totalAssets(), Math.Rounding.Floor);
         require(shares <= balanceOf(user), "invalid withdraw request");
 
-        if (shares > 0) {
-            _tokenTransferOut(user, _convertToAssets(shares, totalAssets(), Math.Rounding.Floor));
+        if (amount > 0) {
+            _tokenTransferOut(user, amount);
             _burn(user, shares);
         }
     }
@@ -146,6 +153,14 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
 
     // **************** Read Functions ******************
     function withdrawStatus(address user) external view returns (uint256 claimableAmount, uint256 pendingAmount) {
+        return _withdrawStatusAssets(user);
+    }
+
+    function _withdrawStatusAssets(address user)
+        internal
+        view
+        returns (uint256 claimableAmount, uint256 pendingAmount)
+    {
         for (uint256 i = nextUnclaimedID[user]; i < nextRequestID[user]; i++) {
             WithdrawRequest storage request = withdrawQueue[user][i];
             if (block.timestamp < request.requestTimeStamp + IORAStakeRouter(stakingPoolRouter).withdrawGracePeriod()) {
@@ -193,7 +208,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         view
         returns (uint256)
     {
-        return assets.mulDiv(totalSupply() + 10, totalAssetsBalance + 1, rounding);
+        return assets.mulDiv(totalSupply(), totalAssetsBalance, rounding);
     }
 
     /**
@@ -204,7 +219,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         view
         returns (uint256)
     {
-        return shares.mulDiv(totalAssetsBalance + 1, totalSupply() + 10, rounding);
+        return shares.mulDiv(totalAssetsBalance, totalSupply(), rounding);
     }
 
     // **************** Admin Functions *****************

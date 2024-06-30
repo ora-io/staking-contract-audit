@@ -192,14 +192,16 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
      * @dev Internal conversion function (from assets to shares) with support for rounding direction.
      */
     function _convertToShares(uint256 assets) internal view returns (uint256) {
-        return assets.mulDiv(totalSupply(), totalAssets(), Math.Rounding.Floor);
+        uint256 asset = totalAssets();
+        return asset == 0 ? assets : assets.mulDiv(totalSupply(), asset, Math.Rounding.Floor);
     }
 
     /**
      * @dev Internal conversion function (from shares to assets) with support for rounding direction.
      */
     function _convertToAssets(uint256 shares) internal view returns (uint256) {
-        return shares.mulDiv(totalAssets(), totalSupply(), Math.Rounding.Floor);
+        uint256 supply = totalSupply();
+        return supply == 0 ? shares : shares.mulDiv(totalAssets(), supply, Math.Rounding.Floor);
     }
 
     // **************** Admin Functions *****************

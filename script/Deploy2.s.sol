@@ -11,8 +11,10 @@ import {ORAStakePool_OLM} from "../src/ORAStakePool_OLM.sol";
 
 contract DeployScript is Script {
     address constant proxyAdmin = 0x076CF237f609de0066AbC0974673Ab376992E4D2;
-    address constant router_proxy = 0x27005E147C856839eC135ad9FD329828Eb5b53b6;
+    address constant router_proxy = 0x802b194E03E72c6104211CafcdAd376a56f0C974;
     address constant olm_proxy = 0x0e919a5F1A28b1Bb8a92c4A1A8972F2e447DFAa2;
+
+    bool constant initAsUnpause = true;
 
     function setUp() public {}
 
@@ -41,6 +43,11 @@ contract DeployScript is Script {
         address[] memory vaultPools = new address[](1);
         vaultPools[0] = address(olmpool_proxy);
         ORAStakeRouter(router_proxy).addVault(vaultPools, 30 * 10 ** 18);
+
+        if (initAsUnpause) {
+            ORAStakePool_OLM(address(olmpool_proxy)).unpause();
+            ORAStakePool_OLM(address(olmpool_proxy)).setPauseWithdraw(false);
+        }
 
         vm.stopBroadcast();
         logAddress("PROXY_ADMIN_ADDR", proxyAdmin);

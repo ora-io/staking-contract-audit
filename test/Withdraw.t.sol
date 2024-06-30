@@ -34,7 +34,7 @@ contract WithdrawTest is Test {
 
         router = ORAStakeRouter(address(router_proxy));
         router.initialize(initialOwner);
-
+        router.setPauseWithdraw(false);
         // init eth pool
         ORAStakePool_ETH ethpool_impl = new ORAStakePool_ETH();
         TransparentUpgradeableProxy ethpool_proxy =
@@ -43,6 +43,7 @@ contract WithdrawTest is Test {
         ethPool = ORAStakePool_ETH(address(ethpool_proxy));
         ethPool.initialize(address(router_proxy), initialOwner);
         ethPool.unpause();
+        ethPool.setPauseWithdraw(false);
 
         // set eth related vault
         address[] memory vaultPools = new address[](1);
@@ -65,6 +66,7 @@ contract WithdrawTest is Test {
         olmPool.initialize(address(router_proxy), initialOwner);
         olmPool.setStakingTokenAddress(address(olmToken));
         olmPool.unpause();
+        olmPool.setPauseWithdraw(false);
 
         address[] memory vaultPools2 = new address[](1);
         vaultPools2[0] = address(olmPool_proxy);

@@ -47,6 +47,7 @@ contract DeployScript is Script {
 
         if (initAsUnpause) {
             ORAStakeRouter(address(router_proxy)).unpause();
+            ORAStakeRouter(address(router_proxy)).setPauseWithdraw(false);
         }
 
         // init steth pool
@@ -59,6 +60,7 @@ contract DeployScript is Script {
 
         if (initAsUnpause) {
             ORAStakePool_StETH(address(stpool_proxy)).unpause();
+            ORAStakePool_StETH(address(stpool_proxy)).setPauseWithdraw(false);
         }
 
         // init stakestone token
@@ -77,8 +79,11 @@ contract DeployScript is Script {
         ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).initialize(address(router_proxy), initialOwner);
         ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).setStakingTokenAddress(address(stakestoneeth_proxy));
 
+        ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).setPermit2Address(0x000000000022D473030F116dDEE9F6B43aC78BA3);
+
         if (initAsUnpause) {
             ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).unpause();
+            ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).setPauseWithdraw(false);
         }
 
         // init eth pool
@@ -90,6 +95,7 @@ contract DeployScript is Script {
 
         if (initAsUnpause) {
             ORAStakePool_ETH(address(ethpool_proxy)).unpause();
+            ORAStakePool_ETH(address(ethpool_proxy)).setPauseWithdraw(false);
         }
 
         // set eth related vault

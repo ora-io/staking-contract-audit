@@ -70,7 +70,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         );
 
         withdrawQueue[user][nextRequestID[user]] =
-            WithdrawRequest(amount, _convertToShares(amount, Math.Rounding.Floor, 0, false), block.timestamp);
+            WithdrawRequest(amount, _convertToShares(amount, Math.Rounding.Ceil, 0, false), block.timestamp);
         nextRequestID[user] = nextRequestID[user] + 1;
 
         return nextRequestID[user] - 1;
@@ -97,8 +97,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     }
 
     function _withdraw(address user, uint256 amount) internal virtual {
-        bool alreadyDeposited = stakingTokenAddress == address(0);
-        uint256 shares = _convertToShares(amount, Math.Rounding.Ceil, msg.value, alreadyDeposited);
+        uint256 shares = _convertToShares(amount, Math.Rounding.Ceil, msg.value, false);
         require(shares <= balanceOf(user), "invalid withdraw request");
         // we do not revert 0 amount withdraw in case user do batch withdraw from multiple pools
         if (amount > 0) {

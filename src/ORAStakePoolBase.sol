@@ -33,11 +33,6 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         _;
     }
 
-    modifier tokenAddressIsValid(address tokenAddress) {
-        require(tokenAddress != address(0), "invalid token address");
-        _;
-    }
-
     // **************** Setup Functions  ****************
     constructor() {
         _disableInitializers();
@@ -70,9 +65,12 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
             totalRequestedAmount += withdrawQueue[user][i].amount;
         }
 
-        require(totalRequestedAmount + amount <= _convertToAssets(balanceOf(user)), "invalid amount");
+        require(
+            totalRequestedAmount + amount <= _convertToAssets(balanceOf(user), Math.Rounding.Floor), "invalid amount"
+        );
 
-        withdrawQueue[user][nextRequestID[user]] = WithdrawRequest(amount, block.timestamp);
+        withdrawQueue[user][nextRequestID[user]] =
+            WithdrawRequest(amount, _convertToShares(amount, Math.Rounding.Floor, 0, false), block.timestamp);
         nextRequestID[user] = nextRequestID[user] + 1;
 
         return nextRequestID[user] - 1;
@@ -82,28 +80,27 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         require(nextRequestID[user] != 0, "No withdraw request found.");
         require(nextRequestID[user] != nextUnclaimedID[user], "No new withdraw request.");
 
-        uint256 claimableAmount = _updateAndCalculateClaimable(user);
-        _withdraw(user, claimableAmount);
+        // TODO: which one is better?
+        (uint256 claimableAmount, uint256 claimableShares) = _updateAndCalculateClaimable(user);
+        _withdraw(user, _convertToAssets(claimableShares, Math.Rounding.Floor));
 
         return claimableAmount;
     }
 
     // ********* Write Internal Functions  ************
     function _deposit(address user, uint256 amount) internal virtual {
-        uint256 shares = amount;
-        uint256 existingAsset = totalAssets();
-        if (existingAsset != 0 && totalSupply() != 0) {
-            shares = _convertToShares(amount);
-        }
-
+        bool alreadyDeposited = stakingTokenAddress == address(0);
+        uint256 shares = _convertToShares(amount, Math.Rounding.Floor, msg.value, alreadyDeposited);
+        require(shares > 0, "invalid deposit amount");
         _mint(user, shares);
         _tokenTransferIn(user, amount);
     }
 
     function _withdraw(address user, uint256 amount) internal virtual {
-        uint256 shares = _convertToShares(amount);
+        bool alreadyDeposited = stakingTokenAddress == address(0);
+        uint256 shares = _convertToShares(amount, Math.Rounding.Ceil, msg.value, alreadyDeposited);
         require(shares <= balanceOf(user), "invalid withdraw request");
-
+        // we do not revert 0 amount withdraw in case user do batch withdraw from multiple pools
         if (amount > 0) {
             _burn(user, shares);
             _tokenTransferOut(user, amount);
@@ -120,19 +117,20 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         IERC20(stakingTokenAddress).transfer(user, amount);
     }
 
-    function _updateAndCalculateClaimable(address user) internal returns (uint256) {
-        uint256 claimableAmount = 0;
+    function _updateAndCalculateClaimable(address user)
+        internal
+        returns (uint256 claimableAmount, uint256 claimableShares)
+    {
         for (uint256 i = nextUnclaimedID[user]; i < nextRequestID[user]; i++) {
             WithdrawRequest storage request = withdrawQueue[user][i];
             if (block.timestamp > request.requestTimeStamp + IORAStakeRouter(stakingPoolRouter).withdrawGracePeriod()) {
                 claimableAmount += request.amount;
+                claimableShares += request.shares;
                 nextUnclaimedID[user] = i + 1;
             } else {
                 break;
             }
         }
-
-        return claimableAmount;
     }
 
     function _setRouter(address _router) internal {
@@ -175,11 +173,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     }
 
     function balanceOfAsset(address user) external view virtual returns (uint256) {
-        return _convertToAssets(balanceOf(user));
-    }
-
-    function convertToShares(uint256 assets) external view returns (uint256) {
-        return _convertToShares(assets);
+        return _convertToAssets(balanceOf(user), Math.Rounding.Floor);
     }
 
     function totalAssets() public view virtual returns (uint256) {
@@ -188,20 +182,27 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
             : IERC20(stakingTokenAddress).balanceOf(address(this));
     }
 
+    function _decimalsOffset() internal view virtual returns (uint256) {
+        return 8;
+    }
+
     /**
      * @dev Internal conversion function (from assets to shares) with support for rounding direction.
      */
-    function _convertToShares(uint256 assets) internal view returns (uint256) {
-        uint256 asset = totalAssets();
-        return asset == 0 ? assets : assets.mulDiv(totalSupply(), asset, Math.Rounding.Floor);
+    function _convertToShares(uint256 assets, Math.Rounding rounding, uint256 depositedAmount, bool isAlreadyDeposited)
+        internal
+        view
+        returns (uint256)
+    {
+        uint256 totalAsset = isAlreadyDeposited ? totalAssets() - depositedAmount : totalAssets();
+        return assets.mulDiv(totalSupply() + 10 ** _decimalsOffset(), totalAsset + 1, rounding);
     }
 
     /**
      * @dev Internal conversion function (from shares to assets) with support for rounding direction.
      */
-    function _convertToAssets(uint256 shares) internal view returns (uint256) {
-        uint256 supply = totalSupply();
-        return supply == 0 ? shares : shares.mulDiv(totalAssets(), supply, Math.Rounding.Floor);
+    function _convertToAssets(uint256 shares, Math.Rounding rounding) internal view returns (uint256) {
+        return shares.mulDiv(totalAssets() + 1, totalSupply() + 10 ** _decimalsOffset(), rounding);
     }
 
     // **************** Admin Functions *****************
@@ -217,7 +218,7 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         permit2Address = _permit2Address;
     }
 
-    function setStakingTokenAddress(address _tokenAddress) external onlyOwner tokenAddressIsValid(_tokenAddress) {
+    function setStakingTokenAddress(address _tokenAddress) external onlyOwner {
         stakingTokenAddress = _tokenAddress;
     }
 

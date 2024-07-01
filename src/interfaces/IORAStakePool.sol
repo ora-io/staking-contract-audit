@@ -5,6 +5,7 @@ interface IORAStakePool {
     // ******** Structures ************
     struct WithdrawRequest {
         uint256 amount;
+        uint256 shares;
         uint256 requestTimeStamp;
     }
 

@@ -79,7 +79,9 @@ contract DeployScript is Script {
         ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).initialize(address(router_proxy), initialOwner);
         ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).setStakingTokenAddress(address(stakestoneeth_proxy));
 
-        ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).setPermit2Address(0x000000000022D473030F116dDEE9F6B43aC78BA3);
+        ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).setPermit2Address(
+            0x000000000022D473030F116dDEE9F6B43aC78BA3
+        );
 
         if (initAsUnpause) {
             ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).unpause();

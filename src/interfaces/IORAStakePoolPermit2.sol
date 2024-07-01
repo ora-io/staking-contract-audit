@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {ISignatureTransfer} from "./ISignatureTransfer.sol";
+import {IAllowanceTransfer} from "./IAllowanceTransfer.sol";
 
 interface IORAStakePoolPermit2 {
     // **************** Write Functions  ****************
     function stakeWithPermit2(
-        ISignatureTransfer.PermitTransferFrom memory permit,
-        ISignatureTransfer.SignatureTransferDetails calldata transferDetails,
-        address owner,
+        address user,
+        IAllowanceTransfer.PermitSingle memory permitSingle,
         bytes calldata signature
     ) external;
 }

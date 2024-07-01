@@ -10,11 +10,14 @@ import {ORAStakeRouter} from "../src/ORAStakeRouter.sol";
 import {ORAStakePool_OLM} from "../src/ORAStakePool_OLM.sol";
 
 contract DeployScript is Script {
-    address constant proxyAdmin = 0x076CF237f609de0066AbC0974673Ab376992E4D2;
-    address constant router_proxy = 0x9D5B5855A2cadF30a1009F704aF07deBF71B5F4a;
-    address constant olm_proxy = 0x0e919a5F1A28b1Bb8a92c4A1A8972F2e447DFAa2;
+    address constant proxyAdmin = 0x2d1b035CA47E04A119dff0FAC828f4a57A67E4dE;
+    address constant router_proxy = 0x784fDeBfD4779579B4cc2bac484129D29200412a;
+    address constant olm_proxy = 0xe5018913F2fdf33971864804dDB5fcA25C539032;
+    uint256 constant olm_vaultTVL = 3*1e26;
+    address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address constant swap_router = 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;
+    bool constant initAsUnpause = false;
 
-    bool constant initAsUnpause = true;
 
     function setUp() public {}
 
@@ -36,13 +39,17 @@ contract DeployScript is Script {
         TransparentUpgradeableProxy olmpool_proxy =
             new TransparentUpgradeableProxy(address(olmpool_impl), proxyAdmin, new bytes(0));
 
-        ORAStakePool_OLM(payable(address(olmpool_proxy))).initialize(router_proxy, initialOwner);
+        ORAStakePool_OLM(payable(address(olmpool_proxy))).initialize(
+            router_proxy, initialOwner, "Liquidity ORA Token - OLM", "LOT-OLM"
+        );
         ORAStakePool_OLM(payable(address(olmpool_proxy))).setStakingTokenAddress(payable(address(olm_proxy)));
+        ORAStakePool_OLM(payable(address(olmpool_proxy))).setWETHAddress(WETH);
+        ORAStakePool_OLM(payable(address(olmpool_proxy))).setSwapRouterAddress(swap_router);
 
         // set OLM related vault
         address[] memory vaultPools = new address[](1);
         vaultPools[0] = address(olmpool_proxy);
-        ORAStakeRouter(router_proxy).addVault(vaultPools, 30 * 10 ** 18);
+        ORAStakeRouter(router_proxy).addVault(vaultPools, olm_vaultTVL);
 
         if (initAsUnpause) {
             ORAStakePool_OLM(payable(address(olmpool_proxy))).unpause();

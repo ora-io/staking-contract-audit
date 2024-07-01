@@ -16,9 +16,9 @@ import {ORAStakePool_OLM} from "../src/ORAStakePool_OLM.sol";
 contract UpgradeETHPoolsScript is Script {
     address public proxyAdminAddress = 0x076CF237f609de0066AbC0974673Ab376992E4D2; // Replace with actual Proxy Admin address
 
-    address public ethPoolAddress = 0x5dCbD7057a974c07323dE7fe5347806d9De2ea1A;
-    address public stETHPoolAddress = 0x1d9E08207Fa27b422db46581f04250544919774f;
-    address public stakestonePoolAddress = 0xB3602C0513BE1EeADB4e53a70af9b623c68c4F83;
+    address public ethPoolAddress = 0x30CA6c5bc35cddE12bB0f3E4198C01ed2D6857f0;
+    address public stETHPoolAddress = 0x30e1bFA947A7161Fce423056394B7e537199964c;
+    address public stakestonePoolAddress = 0x0D563e769409902e4f7B45a8EE00AA44F8344A88;
 
     address public newImplementationAddress;
 

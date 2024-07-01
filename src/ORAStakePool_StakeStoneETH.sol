@@ -15,7 +15,7 @@ contract ORAStakePool_StakeStoneETH is ORAStakePoolBase, IORAStakePoolPermit2 {
         address user,
         IAllowanceTransfer.PermitSingle calldata permitSingle,
         bytes calldata signature
-    ) external onlyRouter {
+    ) external onlyRouter whenNotPaused {
         require(permitSingle.details.token == stakingTokenAddress, "token address mismatched.");
         require(permitSingle.spender == address(this), "receiving address mismatched.");
 

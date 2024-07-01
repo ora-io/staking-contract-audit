@@ -15,7 +15,7 @@ contract ORAStakePoolPermit is ORAStakePoolBase, IORAStakePoolPermit {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external onlyRouter {
+    ) external onlyRouter whenNotPaused {
         if (IERC20(stakingTokenAddress).allowance(user, address(this)) < stETHAmount) {
             IERC20Permit(stakingTokenAddress).permit(user, address(this), allowance, deadline, v, r, s);
         }

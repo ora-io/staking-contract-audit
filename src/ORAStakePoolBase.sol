@@ -38,10 +38,13 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         _disableInitializers();
     }
 
-    function initialize(address _router, address _owner) external initializer {
+    function initialize(address _router, address _owner, string memory _name, string memory _symbol)
+        external
+        initializer
+    {
         __Ownable_init(_owner);
         __Pausable_init();
-        __ERC20_init("ORA Stake Shares", "OSS"); //TODO: update here
+        __ERC20_init(_name, _symbol);
 
         _pause();
 

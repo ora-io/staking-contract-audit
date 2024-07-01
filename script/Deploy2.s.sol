@@ -11,7 +11,7 @@ import {ORAStakePool_OLM} from "../src/ORAStakePool_OLM.sol";
 
 contract DeployScript is Script {
     address constant proxyAdmin = 0x076CF237f609de0066AbC0974673Ab376992E4D2;
-    address constant router_proxy = 0x802b194E03E72c6104211CafcdAd376a56f0C974;
+    address constant router_proxy = 0x9D5B5855A2cadF30a1009F704aF07deBF71B5F4a;
     address constant olm_proxy = 0x0e919a5F1A28b1Bb8a92c4A1A8972F2e447DFAa2;
 
     bool constant initAsUnpause = true;

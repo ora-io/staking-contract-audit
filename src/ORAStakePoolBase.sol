@@ -88,12 +88,18 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     }
 
     // ********* Write Internal Functions  ************
+    //  https://docs.lido.fi/guides/lido-tokens-integration-guide/#1-2-wei-corner-case
     function _deposit(address user, uint256 amount) internal virtual {
-        bool alreadyDeposited = stakingTokenAddress == address(0);
-        uint256 shares = _convertToShares(amount, Math.Rounding.Floor, msg.value, alreadyDeposited);
+        bool isETH = stakingTokenAddress == address(0);
+        uint256 beforeBalance = isETH ? 0 : IERC20(stakingTokenAddress).balanceOf(address(this));
+
+        _tokenTransferIn(user, amount);
+
+        uint256 actualAmount = isETH ? msg.value : IERC20(stakingTokenAddress).balanceOf(address(this)) - beforeBalance;
+
+        uint256 shares = _convertToShares(actualAmount, Math.Rounding.Floor, actualAmount, true);
         require(shares > 0, "invalid deposit amount");
         _mint(user, shares);
-        _tokenTransferIn(user, amount);
     }
 
     function _withdraw(address user, uint256 amount) internal virtual {

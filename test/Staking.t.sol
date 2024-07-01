@@ -95,7 +95,7 @@ contract StakingTest is Test {
         stakeStoneETH.approve(address(stakeStoneEthPool), amount);
         router.stake(address(stakeStoneEthPool), amount);
 
-        assertTrue(stakeStoneEthPool.balanceOf(address(this)) == amount, "Staking failed");
+        assertTrue(stakeStoneEthPool.balanceOfAsset(address(this)) == amount, "Staking failed");
     }
 
     function testStETHStaking() public {
@@ -104,13 +104,13 @@ contract StakingTest is Test {
         stETH.approve(address(stEthPool), amount);
         router.stake(address(stEthPool), amount);
 
-        assertTrue(stEthPool.balanceOf(address(this)) == amount, "Staking failed");
+        assertTrue(stEthPool.balanceOfAsset(address(this)) == amount, "Staking failed");
     }
 
     function testETHStaking() public {
         uint256 amount = 1e18; // 1 token for simplicity
         router.stake{value: amount}(address(ethPool), amount);
 
-        assertTrue(ethPool.balanceOf(address(this)) == amount, "Staking failed");
+        assertTrue(ethPool.balanceOfAsset(address(this)) == amount, "Staking failed");
     }
 }

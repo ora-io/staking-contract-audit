@@ -14,16 +14,16 @@ contract ORAStakePool_OLM is ORAStakePoolPermit {
     address WETH;
     address router;
 
-    function poolRevenueClaimAndConvert(uint256 snapshotId) public {
+    function poolRevenueClaimAndConvert(uint256 snapshotId) public onlyOwner {
         poolRevenueClaim(snapshotId);
         poolRevenueConvert();
     }
 
-    function poolRevenueClaim(uint256 snapshotId) public {
+    function poolRevenueClaim(uint256 snapshotId) public onlyOwner {
         IERC7641(stakingTokenAddress).claim(snapshotId);
     }
 
-    function poolRevenueConvert() public {
+    function poolRevenueConvert() public onlyOwner {
         uint256 amountIn = address(this).balance;
 
         ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
@@ -46,4 +46,6 @@ contract ORAStakePool_OLM is ORAStakePoolPermit {
     function setSwapRouterAddress(address _router) external onlyOwner {
         router = _router;
     }
+
+    receive() external payable {}
 }

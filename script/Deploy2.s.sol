@@ -45,8 +45,8 @@ contract DeployScript is Script {
         ORAStakeRouter(router_proxy).addVault(vaultPools, 30 * 10 ** 18);
 
         if (initAsUnpause) {
-            ORAStakePool_OLM(address(olmpool_proxy)).unpause();
-            ORAStakePool_OLM(address(olmpool_proxy)).setPauseWithdraw(false);
+            ORAStakePool_OLM(payable(address(olmpool_proxy))).unpause();
+            ORAStakePool_OLM(payable(address(olmpool_proxy))).setPauseWithdraw(false);
         }
 
         vm.stopBroadcast();

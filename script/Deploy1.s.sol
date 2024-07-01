@@ -14,19 +14,24 @@ import {ORAStakePool_ETH} from "../src/ORAStakePool_ETH.sol";
 import {ORAStakePool_OLM} from "../src/ORAStakePool_OLM.sol";
 
 contract DeployScript is Script {
-    address constant steth_proxy = 0x5FeC619342077cdB90652205535DBFCa6a1126fC;
-    address constant stakestoneeth_proxy = 0x2FC35F3B5B75ecF265756882Eb21c68FDcaa828d;
-    address constant proxyAdminAddress = 0x076CF237f609de0066AbC0974673Ab376992E4D2;
+    address constant steth_proxy = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
+    address constant stakestoneeth_proxy = 0x7122985656e38BDC0302Db86685bb972b145bD3C;
 
-    bool constant initAsUnpause = true;
+    address constant permit2Address = 0x000000000022D473030F116dDEE9F6B43aC78BA3;
+    uint256 constant eth_vaultTVL = 1e22;
+
+    // address constant proxyAdminAddress = 0x076CF237f609de0066AbC0974673Ab376992E4D2;
+
+    bool constant initAsUnpause = false;
 
     function setUp() public {}
 
     function run() public {
         vm.startBroadcast();
 
-        // ProxyAdmin proxyAdmin = new ProxyAdmin();
-        // logAddress("PROXY_ADMIN_ADDR", address(proxyAdmin));
+        ProxyAdmin proxyAdmin = new ProxyAdmin();
+        logAddress("PROXY_ADMIN_ADDR", address(proxyAdmin));
+        address proxyAdminAddress = address(proxyAdmin);
 
         address initialOwner = msg.sender; // or specify a different owner address
 
@@ -55,7 +60,9 @@ contract DeployScript is Script {
         TransparentUpgradeableProxy stpool_proxy =
             new TransparentUpgradeableProxy(address(stpool_impl), proxyAdminAddress, new bytes(0));
 
-        ORAStakePool_StETH(address(stpool_proxy)).initialize(address(router_proxy), initialOwner);
+        ORAStakePool_StETH(address(stpool_proxy)).initialize(
+            address(router_proxy), initialOwner, "Liquidity ORA Token - stETH", "LOT-stETH"
+        );
         ORAStakePool_StETH(address(stpool_proxy)).setStakingTokenAddress(address(steth_proxy));
 
         if (initAsUnpause) {
@@ -76,12 +83,12 @@ contract DeployScript is Script {
         TransparentUpgradeableProxy stakestonepool_proxy =
             new TransparentUpgradeableProxy(address(stakestonepool_impl), proxyAdminAddress, new bytes(0));
 
-        ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).initialize(address(router_proxy), initialOwner);
+        ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).initialize(
+            address(router_proxy), initialOwner, "Liquidity ORA Token - STONE", "LOT-STONE"
+        );
         ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).setStakingTokenAddress(address(stakestoneeth_proxy));
 
-        ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).setPermit2Address(
-            0x000000000022D473030F116dDEE9F6B43aC78BA3
-        );
+        ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).setPermit2Address(permit2Address);
 
         if (initAsUnpause) {
             ORAStakePool_StakeStoneETH(address(stakestonepool_proxy)).unpause();
@@ -93,7 +100,9 @@ contract DeployScript is Script {
         TransparentUpgradeableProxy ethpool_proxy =
             new TransparentUpgradeableProxy(address(ethpool_impl), proxyAdminAddress, new bytes(0));
 
-        ORAStakePool_ETH(address(ethpool_proxy)).initialize(address(router_proxy), initialOwner);
+        ORAStakePool_ETH(address(ethpool_proxy)).initialize(
+            address(router_proxy), initialOwner, "Liquidity ORA Token - ETH", "LOT-ETH"
+        );
 
         if (initAsUnpause) {
             ORAStakePool_ETH(address(ethpool_proxy)).unpause();
@@ -105,9 +114,9 @@ contract DeployScript is Script {
         vaultPools[0] = address(stpool_proxy);
         vaultPools[1] = address(stakestonepool_proxy);
         vaultPools[2] = address(ethpool_proxy);
-        ORAStakeRouter(address(router_proxy)).addVault(vaultPools, 100 * 10 ** 18);
+        ORAStakeRouter(address(router_proxy)).addVault(vaultPools, eth_vaultTVL);
 
-        ORAStakeRouter(address(router_proxy)).updateWithdrawGracePeriod(100);
+        // ORAStakeRouter(address(router_proxy)).updateWithdrawGracePeriod(100);
 
         // init olm pool
 

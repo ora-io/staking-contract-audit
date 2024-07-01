@@ -51,7 +51,7 @@ contract StakingTest is Test {
             new TransparentUpgradeableProxy(address(stpool_impl), address(proxyAdmin), new bytes(0));
 
         stEthPool = ORAStakePool_StETH(address(stpool_proxy));
-        stEthPool.initialize(address(router_proxy), initialOwner);
+        stEthPool.initialize(address(router_proxy), initialOwner, "Liquidity ORA Token - stETH", "LOT-stETH");
         stEthPool.setStakingTokenAddress(address(steth_proxy));
         stEthPool.unpause();
         // init stakestone token
@@ -69,7 +69,7 @@ contract StakingTest is Test {
             new TransparentUpgradeableProxy(address(stakestonepool_impl), address(proxyAdmin), new bytes(0));
 
         stakeStoneEthPool = ORAStakePool_StakeStoneETH(address(stakestonepool_proxy));
-        stakeStoneEthPool.initialize(address(router_proxy), initialOwner);
+        stakeStoneEthPool.initialize(address(router_proxy), initialOwner, "Liquidity ORA Token - STONE", "LOT-STONE");
         stakeStoneEthPool.setStakingTokenAddress(address(stakestoneeth_proxy));
         stakeStoneEthPool.unpause();
         // init eth pool
@@ -78,7 +78,7 @@ contract StakingTest is Test {
             new TransparentUpgradeableProxy(address(ethpool_impl), address(proxyAdmin), new bytes(0));
 
         ethPool = ORAStakePool_ETH(address(ethpool_proxy));
-        ethPool.initialize(address(router_proxy), initialOwner);
+        ethPool.initialize(address(router_proxy), initialOwner, "Liquidity ORA Token - ETH", "LOT-ETH");
         ethPool.unpause();
 
         // set eth related vault

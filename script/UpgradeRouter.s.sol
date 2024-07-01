@@ -12,13 +12,13 @@ import {IORAStakeRouter} from "../src/interfaces/IORAStakeRouter.sol";
 
 contract UpgradeORAStakeRouterScript is Script {
     address public proxyAdminAddress = 0x076CF237f609de0066AbC0974673Ab376992E4D2; // Replace with actual Proxy Admin address
-    address public routerProxyAddress = 0x256a883AAcE1ff96B1C9CB5a3284285b6cacE11B; // Replace with actual Router Proxy address
+    address public routerProxyAddress = 0x802b194E03E72c6104211CafcdAd376a56f0C974; // Replace with actual Router Proxy address
 
-    address public ethPoolAddress = 0xb2bA4FdBd74A10C01E06291E04c7Bbc8da05d4e3;
-    address public stETHPoolAddress = 0xc632CcE23917C80191B2cE80DeF00D91C627932a;
-    address public stakestonePoolAddress = 0x4e34818517Fb95eF8351E73665Ba90525A7815b2;
+    address public ethPoolAddress = 0x5dCbD7057a974c07323dE7fe5347806d9De2ea1A;
+    address public stETHPoolAddress = 0x1d9E08207Fa27b422db46581f04250544919774f;
+    address public stakestonePoolAddress = 0xB3602C0513BE1EeADB4e53a70af9b623c68c4F83;
 
-    address public olmPoolAddress = 0x565DCD06caF01F5320e0a76303FABeb8962D6eb7;
+    address public olmPoolAddress = 0x2c791ad1F1A6704746E0C42b82FC889A4fb175D1;
     address public newImplementationAddress;
 
     function run() public {

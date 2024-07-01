@@ -41,7 +41,7 @@ contract WithdrawTest is Test {
             new TransparentUpgradeableProxy(address(ethpool_impl), address(proxyAdmin), new bytes(0));
 
         ethPool = ORAStakePool_ETH(address(ethpool_proxy));
-        ethPool.initialize(address(router_proxy), initialOwner);
+        ethPool.initialize(address(router_proxy), initialOwner, "Liquidity ORA Token - ETH", "LOT-ETH");
         ethPool.unpause();
         ethPool.setPauseWithdraw(false);
 
@@ -63,7 +63,7 @@ contract WithdrawTest is Test {
             new TransparentUpgradeableProxy(address(olmPool_impl), address(proxyAdmin), new bytes(0));
 
         olmPool = ORAStakePool_OLM(payable(address(olmPool_proxy)));
-        olmPool.initialize(address(router_proxy), initialOwner);
+        olmPool.initialize(address(router_proxy), initialOwner, "Liquidity ORA Token - OLM", "LOT-OLM");
         olmPool.setStakingTokenAddress(address(olmToken));
         olmPool.unpause();
         olmPool.setPauseWithdraw(false);

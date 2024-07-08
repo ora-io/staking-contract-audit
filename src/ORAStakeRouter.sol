@@ -170,9 +170,6 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
 
     function getUserStakeAmountInPool(address user, address pool) public view returns (uint256 stakeAmount) {
         stakeAmount = IORAStakePool(pool).balanceOfAsset(user);
-        (uint256 claimable, uint256 pending) = IORAStakePool(pool).withdrawStatus(user);
-        stakeAmount -= claimable;
-        stakeAmount -= pending;
     }
 
     // **************** Admin Functions *****************

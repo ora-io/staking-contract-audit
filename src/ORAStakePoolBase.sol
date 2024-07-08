@@ -72,9 +72,12 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
             totalRequestedAmount + amount <= _convertToAssets(balanceOf(user), Math.Rounding.Floor), "invalid amount"
         );
 
-        withdrawQueue[user][nextRequestID[user]] =
-            WithdrawRequest(amount, _convertToShares(amount, Math.Rounding.Ceil, 0, false), block.timestamp);
+        uint256 shares = _convertToShares(amount, Math.Rounding.Ceil, 0, false);
+
+        withdrawQueue[user][nextRequestID[user]] = WithdrawRequest(amount, shares, block.timestamp);
         nextRequestID[user] = nextRequestID[user] + 1;
+
+        _transfer(user, address(this), shares);
 
         return nextRequestID[user] - 1;
     }
@@ -83,9 +86,8 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         require(nextRequestID[user] != 0, "No withdraw request found.");
         require(nextRequestID[user] != nextUnclaimedID[user], "No new withdraw request.");
 
-        // TODO: which one is better?
         (uint256 claimableAmount, uint256 claimableShares) = _updateAndCalculateClaimable(user);
-        _withdraw(user, _convertToAssets(claimableShares, Math.Rounding.Floor));
+        _withdraw(user, claimableAmount, claimableShares);
 
         return claimableAmount;
     }
@@ -105,12 +107,10 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         _mint(user, shares);
     }
 
-    function _withdraw(address user, uint256 amount) internal virtual {
-        uint256 shares = _convertToShares(amount, Math.Rounding.Ceil, msg.value, false);
-        require(shares <= balanceOf(user), "invalid withdraw request");
+    function _withdraw(address user, uint256 amount, uint256 shares) internal virtual {
         // we do not revert 0 amount withdraw in case user do batch withdraw from multiple pools
         if (amount > 0) {
-            _burn(user, shares);
+            _burn(address(this), shares);
             _tokenTransferOut(user, amount);
         }
     }

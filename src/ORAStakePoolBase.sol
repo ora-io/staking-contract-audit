@@ -77,10 +77,8 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         require(nextRequestID[user] != 0, "No withdraw request found.");
         require(nextRequestID[user] != nextUnclaimedID[user], "No new withdraw request.");
 
-        (uint256 claimableAmount, uint256 claimableShares) = _updateAndCalculateClaimable(user);
-        _withdraw(user, claimableAmount, claimableShares);
-
-        return claimableAmount;
+        (, uint256 claimableShares) = _updateAndCalculateClaimable(user);
+        return _withdraw(user, claimableShares);
     }
 
     // ********* Write Internal Functions  ************
@@ -98,8 +96,9 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         _mint(user, shares);
     }
 
-    function _withdraw(address user, uint256 amount, uint256 shares) internal virtual {
+    function _withdraw(address user, uint256 shares) internal virtual returns (uint256 amount) {
         // we do not revert 0 amount withdraw in case user do batch withdraw from multiple pools
+        amount = _convertToAssets(shares, Math.Rounding.Floor);
         if (amount > 0) {
             _burn(address(this), shares);
             _tokenTransferOut(user, amount);
@@ -173,6 +172,10 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
 
     function balanceOfAsset(address user) external view virtual returns (uint256) {
         return _convertToAssets(balanceOf(user), Math.Rounding.Floor);
+    }
+
+    function balanceOfShares(address user) external view virtual returns (uint256) {
+        return balanceOf(user);
     }
 
     function totalAssets() public view virtual returns (uint256) {

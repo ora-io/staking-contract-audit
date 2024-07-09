@@ -63,15 +63,6 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         whenNotPausedWithdraw
         returns (uint256)
     {
-        uint256 totalRequestedAmount = 0;
-        for (uint256 i = nextUnclaimedID[user]; i < nextRequestID[user]; i++) {
-            totalRequestedAmount += withdrawQueue[user][i].amount;
-        }
-
-        require(
-            totalRequestedAmount + amount <= _convertToAssets(balanceOf(user), Math.Rounding.Floor), "invalid amount"
-        );
-
         uint256 shares = _convertToShares(amount, Math.Rounding.Ceil, 0, false);
 
         withdrawQueue[user][nextRequestID[user]] = WithdrawRequest(amount, shares, block.timestamp);

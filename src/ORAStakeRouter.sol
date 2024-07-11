@@ -63,7 +63,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
 
         IORAStakePool(pool).stake{value: msg.value}(msg.sender, amount);
 
-        emit Stake(msg.sender, amount, pool2VaultId[pool], pool);
+        emit Stake(msg.sender, amount, pool, pool2VaultId[pool]);
     }
 
     function stake(address pool, uint256 amount, uint256 allowance, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
@@ -75,7 +75,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
 
         IORAStakePoolPermit(pool).stakeWithPermit(msg.sender, amount, allowance, deadline, v, r, s);
 
-        emit Stake(msg.sender, amount, pool2VaultId[pool], pool);
+        emit Stake(msg.sender, amount, pool, pool2VaultId[pool]);
     }
 
     function stake(address pool, IAllowanceTransfer.PermitSingle calldata permitSingle, bytes calldata signature)
@@ -87,7 +87,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
 
         IORAStakePoolPermit2(pool).stakeWithPermit2(msg.sender, permitSingle, signature);
 
-        emit Stake(msg.sender, permitSingle.details.amount, pool2VaultId[pool], pool);
+        emit Stake(msg.sender, permitSingle.details.amount, pool, pool2VaultId[pool]);
     }
 
     function requestWithdraw(address pool, uint256 amount)
@@ -100,14 +100,14 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
 
         requestId = IORAStakePool(pool).requestWithdraw(msg.sender, amount);
 
-        emit RequestWithdraw(msg.sender, amount, requestId, pool);
+        emit RequestWithdraw(msg.sender, amount, pool, pool2VaultId[pool], requestId);
         return (pool, requestId);
     }
 
     function claimWithdraw(address pool) external validPoolOnly(pool) {
         uint256 amount = IORAStakePool(pool).claimWithdraw(msg.sender);
 
-        emit ClaimWithdraw(msg.sender, amount, pool2VaultId[pool], pool);
+        emit ClaimWithdraw(msg.sender, amount, pool, pool2VaultId[pool], IORAStakePool(pool).nextUnclaimedID(msg.sender));
     }
 
     function claimWithdraw(address[] calldata pools) external {
@@ -116,7 +116,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
             require(pool2VaultId[pools[i]] != 0, "Pool does not exist");
 
             uint256 amount = IORAStakePool(pools[i]).claimWithdraw(msg.sender);
-            emit ClaimWithdraw(msg.sender, amount, pool2VaultId[pools[i]], pools[i]);
+            emit ClaimWithdraw(msg.sender, amount, pools[i], pool2VaultId[pools[i]], IORAStakePool(pools[i]).nextUnclaimedID(msg.sender));
         }
     }
 

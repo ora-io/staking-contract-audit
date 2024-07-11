@@ -19,6 +19,7 @@ interface IORAStakePool {
     function totalAssets() external view returns (uint256);
     function balanceOfAsset(address user) external view returns (uint256);
     function getWithdrawQueue(address user) external view returns (WithdrawRequest[] memory queue);
+    function nextUnclaimedID(address user) external view returns (uint256);
 
     // **************** Admin Functions *****************
     function setStakingPoolRouter(address router) external;

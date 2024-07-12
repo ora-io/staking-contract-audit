@@ -104,20 +104,28 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
         return (pool, requestId);
     }
 
-    function claimWithdraw(address pool) external validPoolOnly(pool) {
-        uint256 amount = IORAStakePool(pool).claimWithdraw(msg.sender);
-
-        emit ClaimWithdraw(msg.sender, amount, pool, pool2VaultId[pool], IORAStakePool(pool).nextUnclaimedID(msg.sender));
+    function claimWithdraw(address pool) external {
+        // revert for single pool claim
+        require(IORAStakePool(pool).getClaimableRequestsNum(msg.sender) != 0, "No active withdraw request.");
+        _claimWithdraw(pool);
     }
 
     function claimWithdraw(address[] calldata pools) external {
         uint256 numOfPools = pools.length;
+        // allow 0 claimable amout in pools to prevent tx revert in multiple pool claims
         for (uint256 i = 0; i < numOfPools; i++) {
-            require(pool2VaultId[pools[i]] != 0, "Pool does not exist");
-
-            uint256 amount = IORAStakePool(pools[i]).claimWithdraw(msg.sender);
-            emit ClaimWithdraw(msg.sender, amount, pools[i], pool2VaultId[pools[i]], IORAStakePool(pools[i]).nextUnclaimedID(msg.sender));
+            if (IORAStakePool(pools[i]).getClaimableRequestsNum(msg.sender) != 0) {
+                _claimWithdraw(pools[i]);
+            }
         }
+    }
+
+    function _claimWithdraw(address pool) internal validPoolOnly(pool) {
+        uint256 amount = IORAStakePool(pool).claimWithdraw(msg.sender);
+
+        emit ClaimWithdraw(
+            msg.sender, amount, pool, pool2VaultId[pool], IORAStakePool(pool).nextUnclaimedID(msg.sender)
+        );
     }
 
     function getVaultCurrentTVL(uint256 vaultId) public view returns (uint256) {

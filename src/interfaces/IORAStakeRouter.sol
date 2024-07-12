@@ -45,8 +45,13 @@ interface IORAStakeRouter {
     // ******** Events ************
     event NewVault(uint256 indexed vaultID, uint256 maxTVL);
     event Stake(address indexed user, uint256 indexed amount, address indexed pool, uint256 vaultId);
-    event RequestWithdraw(address indexed user, uint256 indexed amount, address indexed pool, uint256 vaultId, uint256 requestID);
-    event ClaimWithdraw(address indexed user, uint256 indexed amount, address indexed pool, uint256 vaultId, uint256 lastRequestID);
+    event RequestWithdraw(
+        address indexed user, uint256 indexed amount, address indexed pool, uint256 vaultId, uint256 requestID
+    );
+    event ClaimWithdraw(
+        address indexed user, uint256 indexed amount, address indexed pool, uint256 vaultId, uint256 lastRequestID
+    );
     // ******** Errors ************
+
     error ExceedingTVL();
 }

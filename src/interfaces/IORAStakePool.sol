@@ -15,6 +15,7 @@ interface IORAStakePool {
     function claimWithdraw(address user) external returns (uint256 amount);
 
     // **************** Read Functions ******************
+    function getClaimableRequestsNum(address user) external view returns (uint256);
     function withdrawStatus(address user) external view returns (uint256 claimableAmount, uint256 pendingAmount);
     function totalAssets() external view returns (uint256);
     function balanceOfAsset(address user) external view returns (uint256);

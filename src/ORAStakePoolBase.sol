@@ -74,10 +74,10 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     }
 
     function claimWithdraw(address user) external onlyRouter returns (uint256) {
-        require(nextRequestID[user] != 0, "No withdraw request found.");
-        require(nextRequestID[user] != nextUnclaimedID[user], "No new withdraw request.");
-
-        (, uint256 claimableShares) = _updateAndCalculateClaimable(user);
+        uint256 claimableShares = 0;
+        if (_getClaimableRequestsNum(user) != 0) {
+            (, claimableShares) = _updateAndCalculateClaimable(user);
+        }
         return _withdraw(user, claimableShares);
     }
 
@@ -99,10 +99,8 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     function _withdraw(address user, uint256 shares) internal virtual returns (uint256 amount) {
         // we do not revert 0 amount withdraw in case user do batch withdraw from multiple pools
         amount = _convertToAssets(shares, Math.Rounding.Floor);
-        if (amount > 0) {
-            _burn(address(this), shares);
-            _tokenTransferOut(user, amount);
-        }
+        _burn(address(this), shares);
+        _tokenTransferOut(user, amount);
     }
 
     function _tokenTransferIn(address user, uint256 amount) internal virtual {
@@ -140,6 +138,14 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     }
 
     // **************** Read Functions ******************
+    function getClaimableRequestsNum(address user) external view returns (uint256) {
+        return _getClaimableRequestsNum(user);
+    }
+
+    function _getClaimableRequestsNum(address user) internal view returns (uint256) {
+        return nextRequestID[user] - nextUnclaimedID[user];
+    }
+
     function withdrawStatus(address user) external view returns (uint256 claimableAmount, uint256 pendingAmount) {
         return _withdrawStatusAssets(user);
     }

@@ -24,6 +24,7 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
 
     PoolVault[] public vaults; // id starts from 1
     mapping(address => uint256) public pool2VaultId;
+    mapping(address => address) public migrationMap;
 
     modifier validVaultIdOnly(uint256 vaultId) {
         require(vaultId != 0 && vaultId < vaults.length, "Vault ID does not exist.");
@@ -126,6 +127,15 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
         emit ClaimWithdraw(
             msg.sender, amount, pool, pool2VaultId[pool], IORAStakePool(pool).nextUnclaimedID(msg.sender)
         );
+    }
+
+    function migrateTokens(address oldPool, uint256 amount) public validPoolOnly(oldPool) whenNotPausedWithdraw {
+        address newPool = migrationMap[oldPool];
+        require(newPool != address(0), "invalid migration request");
+        _validateStake(newPool, amount);
+
+        IORAStakePool(oldPool).migrateAsset(msg.sender, amount, newPool);
+        IORAStakePool(newPool).processAsset(msg.sender, amount);
     }
 
     function getVaultCurrentTVL(uint256 vaultId) public view returns (uint256) {
@@ -233,6 +243,20 @@ contract ORAStakeRouter is OwnableUpgradeable, PausableUpgradeable, IORAStakeRou
 
     function unpause() external onlyOwner {
         _unpause();
+    }
+
+    function setPoolMigrationAddress(address oldPool, address newPool)
+        public
+        onlyOwner
+        validPoolOnly(oldPool)
+        validPoolOnly(newPool)
+    {
+        require(
+            IORAStakePool(oldPool).stakingTokenAddress() == IORAStakePool(newPool).stakingTokenAddress(),
+            "only pools with same staking token can be migrated."
+        );
+        require(oldPool != newPool, "old pool and new pool can not be the same address.");
+        migrationMap[oldPool] = newPool;
     }
 
     function _setPauseWithdraw(bool pauseWithdrawRq) internal {

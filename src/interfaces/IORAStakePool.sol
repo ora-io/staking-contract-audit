@@ -13,6 +13,8 @@ interface IORAStakePool {
     function stake(address user, uint256 amount) external payable;
     function requestWithdraw(address user, uint256 amount) external returns (uint256 requestID);
     function claimWithdraw(address user) external returns (uint256 amount);
+    function migrateAsset(address user, uint256 assetAmount, address migrationAddress) external;
+    function processAsset(address user, uint256 assetAmount) external;
 
     // **************** Read Functions ******************
     function getClaimableRequestsNum(address user) external view returns (uint256);
@@ -21,6 +23,7 @@ interface IORAStakePool {
     function balanceOfAsset(address user) external view returns (uint256);
     function getWithdrawQueue(address user) external view returns (WithdrawRequest[] memory queue);
     function nextUnclaimedID(address user) external view returns (uint256);
+    function stakingTokenAddress() external view returns (address);
 
     // **************** Admin Functions *****************
     function setStakingPoolRouter(address router) external;

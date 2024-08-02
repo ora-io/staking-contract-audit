@@ -9,10 +9,32 @@ import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC2
 import {IORAStakePoolPermit} from "./interfaces/IORAStakePoolPermit.sol";
 import {ORAStakePoolPermit} from "./ORAStakePoolPermit.sol";
 import {ISwapRouter} from "./interfaces/ISwapRouter.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract ORAStakePool_OLM is ORAStakePoolPermit {
+    using Math for uint256;
+
     address WETH;
     address router;
+
+    function migrateAsset(address user, uint256 assetAmount, address migrationAddress)
+        public
+        override
+        onlyRouter
+        whenNotPausedWithdraw
+    {
+        require(migrationAddress != address(0), "invalid migration address.");
+
+        uint256 shares = _convertToShares(assetAmount, Math.Rounding.Ceil, 0, false);
+        _burn(user, shares);
+        _tokenTransferOut(migrationAddress, assetAmount);
+    }
+
+    function processAsset(address user, uint256 assetAmount) public override onlyRouter whenNotPausedWithdraw {
+        uint256 shares = _convertToShares(assetAmount, Math.Rounding.Floor, assetAmount, true);
+        require(shares > 0, "invalid deposit amount");
+        _mint(user, shares);
+    }
 
     function poolRevenueClaimAndConvert(uint256 snapshotId, uint256 amountoutMin) public {
         poolRevenueClaim(snapshotId);

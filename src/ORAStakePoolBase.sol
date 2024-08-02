@@ -81,6 +81,10 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
         return _withdraw(user, claimableShares);
     }
 
+    function migrateAsset(address, uint256, address) external virtual {}
+
+    function processAsset(address, uint256) external virtual {}
+
     // ********* Write Internal Functions  ************
     //  https://docs.lido.fi/guides/lido-tokens-integration-guide/#1-2-wei-corner-case
     function _deposit(address user, uint256 amount) internal virtual {
@@ -97,7 +101,6 @@ contract ORAStakePoolBase is OwnableUpgradeable, PausableUpgradeable, IORAStakeP
     }
 
     function _withdraw(address user, uint256 shares) internal virtual returns (uint256 amount) {
-        // we do not revert 0 amount withdraw in case user do batch withdraw from multiple pools
         amount = _convertToAssets(shares, Math.Rounding.Floor);
         _burn(address(this), shares);
         _tokenTransferOut(user, amount);

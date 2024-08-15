@@ -2,9 +2,10 @@
 pragma solidity ^0.8.23;
 
 import {ORAStakePoolBase} from "./ORAStakePoolBase.sol";
-import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IORAStakePoolPermit2} from "./interfaces/IORAStakePoolPermit2.sol";
 import {IAllowanceTransfer} from "./interfaces/IAllowanceTransfer.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract ORAStakePool_USDT is ORAStakePoolBase, IORAStakePoolPermit2 {
@@ -37,6 +38,12 @@ contract ORAStakePool_USDT is ORAStakePoolBase, IORAStakePoolPermit2 {
     }
 
     // ******** Token Transfer ************
+    function _tokenTransferIn(address user, uint256 amount) internal override virtual {
+        require(msg.value == 0, "eth amount should be 0.");
+
+        SafeERC20.safeTransferFrom(IERC20(stakingTokenAddress), user, address(this), amount);
+    }
+    
     function _tokenTransferIn(address user, IAllowanceTransfer.PermitSingle calldata permitSingle) internal {
         require(msg.value == 0, "eth amount should be 0.");
 
@@ -44,4 +51,5 @@ contract ORAStakePool_USDT is ORAStakePoolBase, IORAStakePoolPermit2 {
             user, address(this), permitSingle.details.amount, stakingTokenAddress
         );
     }
+    
 }

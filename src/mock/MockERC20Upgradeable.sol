@@ -22,6 +22,10 @@ contract MyToken is Initializable, ERC20Upgradeable, OwnableUpgradeable, ERC20Pe
         _mint(msg.sender, 1000000 * 10 ** decimals());
     }
 
+    function decimals() public view override virtual returns (uint8) {
+        return 6;
+    }
+
     function mint(address to, uint256 amount) public {
         _mint(to, amount);
     }

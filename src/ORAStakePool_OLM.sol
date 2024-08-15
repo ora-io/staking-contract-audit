@@ -30,7 +30,7 @@ contract ORAStakePool_OLM is ORAStakePoolPermit {
         _tokenTransferOut(migrationAddress, assetAmount);
     }
 
-    function processAsset(address user, uint256 assetAmount) public override onlyRouter whenNotPausedWithdraw {
+    function processAsset(address user, uint256 assetAmount) public override onlyRouter whenNotPaused {
         uint256 shares = _convertToShares(assetAmount, Math.Rounding.Floor, assetAmount, true);
         require(shares > 0, "invalid deposit amount");
         _mint(user, shares);

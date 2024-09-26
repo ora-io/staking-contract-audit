@@ -51,5 +51,8 @@ contract ORAStakePool_USDT is ORAStakePoolBase, IORAStakePoolPermit2 {
             user, address(this), permitSingle.details.amount, stakingTokenAddress
         );
     }
-    
+
+    function _tokenTransferOut(address user, uint256 amount) internal override virtual {
+        SafeERC20.safeTransferFrom(IERC20(stakingTokenAddress), address(this), user, amount);
+    }
 }
